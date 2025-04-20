@@ -49,6 +49,35 @@
             padding: 20px;
         }
         
+        .tracker-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .left-side {
+            grid-column: 1;
+            grid-row: 1 / span 2;
+        }
+
+        .right-side {
+            grid-column: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        @media (max-width: 1200px) {
+            .tracker-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .left-side, .right-side {
+                grid-column: 1;
+                grid-row: auto;
+            }
+        }
+        
         .header {
             display: flex;
             align-items: center;
@@ -159,6 +188,7 @@
             border: 1px solid var(--border);
             transition: var(--transition);
             overflow: hidden;
+            height: 100%;
         }
         
         .section:hover {
@@ -235,6 +265,7 @@
         .tracker-table {
             width: 100%;
             border-collapse: collapse;
+            table-layout: fixed;
         }
         
         .tracker-table th {
@@ -251,6 +282,9 @@
             font-size: 13px;
             border-bottom: 1px solid var(--border);
             color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         
         .tracker-table tr:hover {
@@ -398,354 +432,360 @@
     </div>
 
     <div class="container">
-        <div class="section">
-            <div class="section-header">
-                <div class="section-title">
-                    <div class="section-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
-                        </svg>
-                    </div>
-                    CA Tracker
-                </div>
-                <div class="section-actions">
-                    <button class="action-button">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="7 10 12 15 17 10"></polyline>
-                            <line x1="12" y1="15" x2="12" y2="3"></line>
-                        </svg>
-                        Export
-                    </button>
-                    <button class="action-button">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <line x1="12" y1="8" x2="12" y2="16"></line>
-                            <line x1="8" y1="12" x2="16" y2="12"></line>
-                        </svg>
-                        Add New
-                    </button>
-                </div>
-            </div>
-            <div class="section-content">
-                <table class="tracker-table">
-                    <thead>
-                        <tr>
-                            <th>Token</th>
-                            <th>Contract Address</th>
-                            <th>Market Cap</th>
-                            <th>Price</th>
-                            <th>Change 24h</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>
-                                <div class="token-info">
-                                    <div class="token-icon">X</div>
-                                    <span class="token-name">Example Token</span>
-                                </div>
-                            </td>
-                            <td>
-                                <span class="address">0x7a2...3F9a</span>
-                                <button class="copy-btn">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                    </svg>
-                                </button>
-                            </td>
-                            <td>$1.25M</td>
-                            <td>$0.0025</td>
-                            <td style="color: var(--success)">+15.8%</td>
-                            <td><span class="badge badge-success">Active</span></td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="token-info">
-                                    <div class="token-icon">Y</div>
-                                    <span class="token-name">Sample Token</span>
-                                </div>
-                            </td>
-                            <td>
-                                <span class="address">0x9c8...5B2c</span>
-                                <button class="copy-btn">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                    </svg>
-                                </button>
-                            </td>
-                            <td>$850K</td>
-                            <td>$0.0012</td>
-                            <td style="color: var(--error)">-8.3%</td>
-                            <td><span class="badge badge-warning">Pending</span></td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="token-info">
-                                    <div class="token-icon">Z</div>
-                                    <span class="token-name">Test Token</span>
-                                </div>
-                            </td>
-                            <td>
-                                <span class="address">0x3e2...7D1b</span>
-                                <button class="copy-btn">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                    </svg>
-                                </button>
-                            </td>
-                            <td>$2.1M</td>
-                            <td>$0.0042</td>
-                            <td style="color: var(--success)">+5.2%</td>
-                            <td><span class="badge badge-success">Active</span></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="section">
-            <div class="section-header">
-                <div class="section-title">
-                    <div class="section-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 22a10 10 0 1 1 0-20 10 10 0 0 1 0 20zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm1-8.41l2.54 2.53a1 1 0 0 1-1.42 1.42L11.3 12.7A1 1 0 0 1 11 12V8a1 1 0 0 1 2 0v3.59z"></path>
-                        </svg>
-                    </div>
-                    Streamflow Locks
-                </div>
-                <div class="section-actions">
-                    <button class="action-button">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 5v14"></path>
-                            <path d="M19 12l-7 7-7-7"></path>
-                        </svg>
-                        Sort by Date
-                    </button>
-                    <button class="action-button">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="11" cy="11" r="8"></circle>
-                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                        </svg>
-                        Filter
-                    </button>
-                </div>
-            </div>
-            <div class="section-content">
-                <table class="tracker-table">
-                    <thead>
-                        <tr>
-                            <th>Project</th>
-                            <th>Lock Address</th>
-                            <th>Tokens Locked</th>
-                            <th>Unlock Date</th>
-                            <th>Progress</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>
-                                <div class="token-info">
-                                    <div class="token-icon">L1</div>
-                                    <span class="token-name">Project Alpha</span>
-                                </div>
-                            </td>
-                            <td>
-                                <span class="address">0x5e3...9F2d</span>
-                                <button class="copy-btn">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                    </svg>
-                                </button>
-                            </td>
-                            <td>1,000,000</td>
-                            <td>Dec 15, 2024</td>
-                            <td>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: 35%;"></div>
-                                </div>
-                                <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">35% complete</div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="token-info">
-                                    <div class="token-icon">L2</div>
-                                    <span class="token-name">Project Beta</span>
-                                </div>
-                            </td>
-                            <td>
-                                <span class="address">0x8a1...2C7e</span>
-                                <button class="copy-btn">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                    </svg>
-                                </button>
-                            </td>
-                            <td>500,000</td>
-                            <td>Jun 30, 2024</td>
-                            <td>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: 65%;"></div>
-                                </div>
-                                <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">65% complete</div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="token-info">
-                                    <div class="token-icon">L3</div>
-                                    <span class="token-name">Project Gamma</span>
-                                </div>
-                            </td>
-                            <td>
-                                <span class="address">0x2d4...6B9a</span>
-                                <button class="copy-btn">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                                    </svg>
-                                </button>
-                            </td>
-                            <td>750,000</td>
-                            <td>Sep 10, 2024</td>
-                            <td>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: 48%;"></div>
-                                </div>
-                                <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">48% complete</div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="section">
-            <div class="section-header">
-                <div class="section-title">
-                    <div class="section-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 22a10 10 0 1 1 0-20 10 10 0 0 1 0 20zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-1-5h2v2h-2v-2zm0-8h2v6h-2V7z"></path>
-                        </svg>
-                    </div>
-                    Truth Tracker
-                </div>
-                <div class="section-actions">
-                    <button class="action-button">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                        </svg>
-                        Favorites
-                    </button>
-                    <button class="action-button">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="11" cy="11" r="8"></circle>
-                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                        </svg>
-                        Search
-                    </button>
-                </div>
-            </div>
-            <div class="section-content">
-                <table class="tracker-table">
-                    <thead>
-                        <tr>
-                            <th>Project</th>
-                            <th>Claims</th>
-                            <th>Verified</th>
-                            <th>Community Score</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>
-                                <div class="token-info">
-                                    <div class="token-icon">T1</div>
-                                    <span class="token-name">Project Delta</span>
-                                </div>
-                            </td>
-                            <td>Doxxed Team</td>
-                            <td>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="var(--success)" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        <div class="tracker-grid">
+            <div class="left-side">
+                <div class="section">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <div class="section-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
                                 </svg>
-                            </td>
-                            <td>
-                                <div style="display: flex; align-items: center;">
-                                    <div style="width: 80px; margin-right: 8px;">
-                                        <div class="progress-bar">
-                                            <div class="progress-fill" style="width: 85%; background-color: var(--success);"></div>
-                                        </div>
-                                    </div>
-                                    <span>8.5/10</span>
-                                </div>
-                            </td>
-                            <td><span class="badge badge-success">Verified</span></td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="token-info">
-                                    <div class="token-icon">T2</div>
-                                    <span class="token-name">Project Epsilon</span>
-                                </div>
-                            </td>
-                            <td>Audited</td>
-                            <td>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="var(--success)" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            </div>
+                            CA Tracker
+                        </div>
+                        <div class="section-actions">
+                            <button class="action-button">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
                                 </svg>
-                            </td>
-                            <td>
-                                <div style="display: flex; align-items: center;">
-                                    <div style="width: 80px; margin-right: 8px;">
-                                        <div class="progress-bar">
-                                            <div class="progress-fill" style="width: 92%; background-color: var(--success);"></div>
-                                        </div>
-                                    </div>
-                                    <span>9.2/10</span>
-                                </div>
-                            </td>
-                            <td><span class="badge badge-success">Verified</span></td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="token-info">
-                                    <div class="token-icon">T3</div>
-                                    <span class="token-name">Project Zeta</span>
-                                </div>
-                            </td>
-                            <td>KYC Completed</td>
-                            <td>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                Export
+                            </button>
+                            <button class="action-button">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <circle cx="12" cy="12" r="10"></circle>
-                                    <line x1="12" y1="8" x2="12" y2="12"></line>
-                                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                    <line x1="12" y1="8" x2="12" y2="16"></line>
+                                    <line x1="8" y1="12" x2="16" y2="12"></line>
                                 </svg>
-                            </td>
-                            <td>
-                                <div style="display: flex; align-items: center;">
-                                    <div style="width: 80px; margin-right: 8px;">
-                                        <div class="progress-bar">
-                                            <div class="progress-fill" style="width: 65%; background-color: var(--warning);"></div>
+                                Add New
+                            </button>
+                        </div>
+                    </div>
+                    <div class="section-content">
+                        <table class="tracker-table">
+                            <thead>
+                                <tr>
+                                    <th>Token</th>
+                                    <th>Contract Address</th>
+                                    <th>Market Cap</th>
+                                    <th>Price</th>
+                                    <th>Change 24h</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="token-info">
+                                            <div class="token-icon">X</div>
+                                            <span class="token-name">Example Token</span>
                                         </div>
-                                    </div>
-                                    <span>6.5/10</span>
-                                </div>
-                            </td>
-                            <td><span class="badge badge-warning">Pending</span></td>
-                        </tr>
-                    </tbody>
-                </table>
+                                    </td>
+                                    <td>
+                                        <span class="address">0x7a2...3F9a</span>
+                                        <button class="copy-btn">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                            </svg>
+                                        </button>
+                                    </td>
+                                    <td>$1.25M</td>
+                                    <td>$0.0025</td>
+                                    <td style="color: var(--success)">+15.8%</td>
+                                    <td><span class="badge badge-success">Active</span></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="token-info">
+                                            <div class="token-icon">Y</div>
+                                            <span class="token-name">Sample Token</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="address">0x9c8...5B2c</span>
+                                        <button class="copy-btn">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                            </svg>
+                                        </button>
+                                    </td>
+                                    <td>$850K</td>
+                                    <td>$0.0012</td>
+                                    <td style="color: var(--error)">-8.3%</td>
+                                    <td><span class="badge badge-warning">Pending</span></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="token-info">
+                                            <div class="token-icon">Z</div>
+                                            <span class="token-name">Test Token</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="address">0x3e2...7D1b</span>
+                                        <button class="copy-btn">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                            </svg>
+                                        </button>
+                                    </td>
+                                    <td>$2.1M</td>
+                                    <td>$0.0042</td>
+                                    <td style="color: var(--success)">+5.2%</td>
+                                    <td><span class="badge badge-success">Active</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-side">
+                <div class="section">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <div class="section-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 22a10 10 0 1 1 0-20 10 10 0 0 1 0 20zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm1-8.41l2.54 2.53a1 1 0 0 1-1.42 1.42L11.3 12.7A1 1 0 0 1 11 12V8a1 1 0 0 1 2 0v3.59z"></path>
+                                </svg>
+                            </div>
+                            Streamflow Locks
+                        </div>
+                        <div class="section-actions">
+                            <button class="action-button">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 5v14"></path>
+                                    <path d="M19 12l-7 7-7-7"></path>
+                                </svg>
+                                Sort by Date
+                            </button>
+                            <button class="action-button">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                                Filter
+                            </button>
+                        </div>
+                    </div>
+                    <div class="section-content">
+                        <table class="tracker-table">
+                            <thead>
+                                <tr>
+                                    <th>Project</th>
+                                    <th>Lock Address</th>
+                                    <th>Tokens Locked</th>
+                                    <th>Unlock Date</th>
+                                    <th>Progress</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="token-info">
+                                            <div class="token-icon">L1</div>
+                                            <span class="token-name">Project Alpha</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="address">0x5e3...9F2d</span>
+                                        <button class="copy-btn">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                            </svg>
+                                        </button>
+                                    </td>
+                                    <td>1,000,000</td>
+                                    <td>Dec 15, 2024</td>
+                                    <td>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: 35%;"></div>
+                                        </div>
+                                        <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">35% complete</div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="token-info">
+                                            <div class="token-icon">L2</div>
+                                            <span class="token-name">Project Beta</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="address">0x8a1...2C7e</span>
+                                        <button class="copy-btn">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                            </svg>
+                                        </button>
+                                    </td>
+                                    <td>500,000</td>
+                                    <td>Jun 30, 2024</td>
+                                    <td>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: 65%;"></div>
+                                        </div>
+                                        <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">65% complete</div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="token-info">
+                                            <div class="token-icon">L3</div>
+                                            <span class="token-name">Project Gamma</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="address">0x2d4...6B9a</span>
+                                        <button class="copy-btn">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                            </svg>
+                                        </button>
+                                    </td>
+                                    <td>750,000</td>
+                                    <td>Sep 10, 2024</td>
+                                    <td>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: 48%;"></div>
+                                        </div>
+                                        <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">48% complete</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <div class="section-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 22a10 10 0 1 1 0-20 10 10 0 0 1 0 20zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-1-5h2v2h-2v-2zm0-8h2v6h-2V7z"></path>
+                                </svg>
+                            </div>
+                            Truth Tracker
+                        </div>
+                        <div class="section-actions">
+                            <button class="action-button">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                </svg>
+                                Favorites
+                            </button>
+                            <button class="action-button">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                                Search
+                            </button>
+                        </div>
+                    </div>
+                    <div class="section-content">
+                        <table class="tracker-table">
+                            <thead>
+                                <tr>
+                                    <th>Project</th>
+                                    <th>Claims</th>
+                                    <th>Verified</th>
+                                    <th>Community Score</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="token-info">
+                                            <div class="token-icon">T1</div>
+                                            <span class="token-name">Project Delta</span>
+                                        </div>
+                                    </td>
+                                    <td>Doxxed Team</td>
+                                    <td>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="var(--success)" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                        </svg>
+                                    </td>
+                                    <td>
+                                        <div style="display: flex; align-items: center;">
+                                            <div style="width: 80px; margin-right: 8px;">
+                                                <div class="progress-bar">
+                                                    <div class="progress-fill" style="width: 85%; background-color: var(--success);"></div>
+                                                </div>
+                                            </div>
+                                            <span>8.5/10</span>
+                                        </div>
+                                    </td>
+                                    <td><span class="badge badge-success">Verified</span></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="token-info">
+                                            <div class="token-icon">T2</div>
+                                            <span class="token-name">Project Epsilon</span>
+                                        </div>
+                                    </td>
+                                    <td>Audited</td>
+                                    <td>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="var(--success)" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                        </svg>
+                                    </td>
+                                    <td>
+                                        <div style="display: flex; align-items: center;">
+                                            <div style="width: 80px; margin-right: 8px;">
+                                                <div class="progress-bar">
+                                                    <div class="progress-fill" style="width: 92%; background-color: var(--success);"></div>
+                                                </div>
+                                            </div>
+                                            <span>9.2/10</span>
+                                        </div>
+                                    </td>
+                                    <td><span class="badge badge-success">Verified</span></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="token-info">
+                                            <div class="token-icon">T3</div>
+                                            <span class="token-name">Project Zeta</span>
+                                        </div>
+                                    </td>
+                                    <td>KYC Completed</td>
+                                    <td>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="10"></circle>
+                                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                        </svg>
+                                    </td>
+                                    <td>
+                                        <div style="display: flex; align-items: center;">
+                                            <div style="width: 80px; margin-right: 8px;">
+                                                <div class="progress-bar">
+                                                    <div class="progress-fill" style="width: 65%; background-color: var(--warning);"></div>
+                                                </div>
+                                            </div>
+                                            <span>6.5/10</span>
+                                        </div>
+                                    </td>
+                                    <td><span class="badge badge-warning">Pending</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
