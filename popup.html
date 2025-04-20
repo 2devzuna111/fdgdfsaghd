@@ -6,25 +6,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         :root {
-            --bg-primary: #275D42;
-            --bg-secondary: #3E8964;
-            --bg-card: rgba(81, 161, 121, 0.6);
-            --bg-input: rgba(39, 93, 66, 0.8);
+            --bg-primary: #0F2D20;
+            --bg-secondary: #1A402F;
+            --bg-card: rgba(39, 93, 66, 0.8);
+            --bg-input: rgba(39, 93, 66, 0.9);
             --text-primary: #FFFFFF;
             --text-secondary: rgba(255, 255, 255, 0.8);
             --text-muted: rgba(255, 255, 255, 0.6);
             --accent: #4ADE80;
             --accent-hover: #3BB76F;
             --accent-soft: rgba(74, 222, 128, 0.2);
-            --border: rgba(255, 255, 255, 0.15);
-            --border-active: rgba(255, 255, 255, 0.3);
+            --border: rgba(255, 255, 255, 0.1);
+            --border-active: rgba(255, 255, 255, 0.2);
             --celadon: #A4D8BE; 
             --success: #4ADE80;
             --error: #F87171;
             --warning: #FBBF24;
             --info: #60A5FA;
-            --shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+            --shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.15);
             --radius-sm: 8px;
             --radius-md: 12px;
             --radius-lg: 16px;
@@ -35,7 +35,7 @@
             margin: 0;
             padding: 0;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, var(--bg-primary) 0%, #1A4A33 100%);
+            background: #0F2D20;
             color: var(--text-primary);
             line-height: 1.5;
             min-height: 100vh;
@@ -54,7 +54,7 @@
             justify-content: space-between;
             padding: 16px 24px;
             border-bottom: 1px solid var(--border);
-            background: linear-gradient(to right, var(--bg-secondary), #2D7450);
+            background: #1A402F;
             box-shadow: var(--shadow-sm);
             border-radius: var(--radius-sm);
             margin-bottom: 20px;
@@ -167,13 +167,12 @@
         }
 
         .section {
-            background: linear-gradient(135deg, var(--bg-card), rgba(81, 161, 121, 0.4));
+            background: #275D42;
             border-radius: var(--radius-md);
             padding: 20px;
             margin-bottom: 24px;
             box-shadow: var(--shadow-sm);
             border: 1px solid var(--border);
-            backdrop-filter: blur(10px);
             transition: var(--transition);
         }
 
