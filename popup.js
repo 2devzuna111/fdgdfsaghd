@@ -639,6 +639,76 @@ function setupEventListeners() {
             console.log('Clipboard monitoring ' + (enabled ? 'enabled' : 'disabled'));
         });
     }
+    
+    // Add click handler to Recent Activity section title to test adding a new Solana address
+    const activityTitle = document.querySelector('.right-panel .section-title');
+    if (activityTitle && activityTitle.textContent.includes('Recent Activity')) {
+        activityTitle.style.cursor = 'pointer';
+        activityTitle.title = 'Click to add a test Solana address';
+        
+        activityTitle.addEventListener('click', async () => {
+            console.log('Recent Activity title clicked, adding test Solana address');
+            
+            // Generate random Solana-like address
+            const randomSolAddress = generateRandomSolanaAddress();
+            
+            // Get user info
+            const { username = 'Anonymous' } = await chrome.storage.local.get(['username']);
+            
+            // Create new activity
+            const newActivity = {
+                contractAddress: randomSolAddress,
+                chain: 'Solana',
+                sharedBy: username,
+                timestamp: Date.now()
+            };
+            
+            // Add to recent activities
+            const { recentActivities = [] } = await chrome.storage.local.get(['recentActivities']);
+            recentActivities.unshift(newActivity);
+            
+            // Keep only last 10 activities
+            if (recentActivities.length > 10) {
+                recentActivities.pop();
+            }
+            
+            // Save updated activities
+            await chrome.storage.local.set({ recentActivities });
+            
+            // Reload activities
+            await loadRecentActivities();
+            
+            // Show success message
+            const activitiesList = document.getElementById('activitiesList');
+            if (activitiesList) {
+                const statusMessage = document.createElement('div');
+                statusMessage.className = 'status success';
+                statusMessage.style.display = 'block';
+                statusMessage.textContent = 'Added new test Solana address';
+                activitiesList.prepend(statusMessage);
+                
+                // Auto-hide message
+                setTimeout(() => {
+                    statusMessage.style.opacity = '0';
+                    setTimeout(() => statusMessage.remove(), 500);
+                }, 2000);
+            }
+        });
+    }
+}
+
+// Generate random Solana-like address for testing
+function generateRandomSolanaAddress() {
+    // Solana addresses are typically Base58 encoded
+    const base58Chars = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+    const length = Math.floor(Math.random() * 10) + 35; // Random length between 35-44
+    
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += base58Chars.charAt(Math.floor(Math.random() * base58Chars.length));
+    }
+    
+    return result;
 }
 
 // Load history
@@ -1465,10 +1535,45 @@ async function loadRecentActivities() {
         const { recentActivities = [] } = await chrome.storage.local.get(['recentActivities']);
         console.log('Recent activities from storage:', recentActivities);
         
+        // Generate sample activities if none exist
+        if (!recentActivities || recentActivities.length === 0) {
+            console.log('No activities found, generating sample data');
+            
+            const sampleActivities = [
+                {
+                    contractAddress: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+                    chain: 'Solana',
+                    sharedBy: 'alice',
+                    timestamp: Date.now() - 60000 // 1 minute ago
+                },
+                {
+                    contractAddress: 'So11111111111111111111111111111111111111112',
+                    chain: 'Solana',
+                    sharedBy: 'bob',
+                    timestamp: Date.now() - 3600000 // 1 hour ago
+                },
+                {
+                    contractAddress: '7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs',
+                    chain: 'Solana',
+                    sharedBy: 'carol',
+                    timestamp: Date.now() - 86400000 // 1 day ago
+                }
+            ];
+            
+            // Save sample activities to storage
+            await chrome.storage.local.set({ recentActivities: sampleActivities });
+            console.log('Sample activities saved to storage');
+            
+            // Use the sample activities for display
+            const recentItems = sampleActivities;
+            renderActivities(recentItems, activitiesList);
+            return;
+        }
+        
         // Clear current content
         activitiesList.innerHTML = '';
         
-        // If no activities, show empty state
+        // If still no activities after generating samples, show empty state
         if (!recentActivities || recentActivities.length === 0) {
             activitiesList.innerHTML = '<div class="empty-state">No recent activity</div>';
             return;
@@ -1476,53 +1581,7 @@ async function loadRecentActivities() {
         
         // Get the last 3 activities
         const recentItems = recentActivities.slice(0, 3);
-        let activitiesHtml = '';
-        
-        recentItems.forEach(activity => {
-            const timestamp = formatTimestamp(activity.timestamp || Date.now());
-            const contractAddress = escapeHtml(activity.contractAddress || 'Unknown Contract');
-            const chain = escapeHtml(activity.chain || 'Unknown Chain');
-            const sharedBy = escapeHtml(activity.sharedBy || 'Unknown User');
-            
-            activitiesHtml += `
-                <div class="activity-item">
-                    <div class="activity-content">
-                        <div class="contract-address">${contractAddress}</div>
-                        <div class="activity-details">
-                            <span class="activity-chain">${chain}</span>
-                            <span class="activity-divider">•</span>
-                            <span class="activity-user">Shared by ${sharedBy}</span>
-                        </div>
-                    </div>
-                    <div class="activity-time">${timestamp}</div>
-                </div>
-            `;
-        });
-        
-        activitiesList.innerHTML = activitiesHtml;
-        
-        // Add click event to copy contract addresses
-        document.querySelectorAll('.contract-address').forEach(element => {
-            element.addEventListener('click', function() {
-                const text = this.textContent;
-                navigator.clipboard.writeText(text).then(() => {
-                    const originalText = this.textContent;
-                    this.textContent = 'Copied!';
-                    this.style.backgroundColor = 'rgba(74, 222, 128, 0.2)';
-                    
-                    setTimeout(() => {
-                        this.textContent = originalText;
-                        this.style.backgroundColor = '';
-                    }, 1500);
-                }).catch(err => {
-                    console.error('Failed to copy text: ', err);
-                });
-            });
-            
-            // Add cursor pointer style
-            element.style.cursor = 'pointer';
-            element.title = 'Click to copy';
-        });
+        renderActivities(recentItems, activitiesList);
         
     } catch (error) {
         console.error('Error loading recent activities:', error);
@@ -1531,4 +1590,55 @@ async function loadRecentActivities() {
             activitiesList.innerHTML = '<div class="empty-state">Error loading activities</div>';
         }
     }
+}
+
+// Helper function to render activities
+function renderActivities(activities, container) {
+    let activitiesHtml = '';
+    
+    activities.forEach(activity => {
+        const timestamp = formatTimestamp(activity.timestamp || Date.now());
+        const contractAddress = escapeHtml(activity.contractAddress || 'Unknown Contract');
+        const chain = escapeHtml(activity.chain || 'Unknown Chain');
+        const sharedBy = escapeHtml(activity.sharedBy || 'Unknown User');
+        
+        activitiesHtml += `
+            <div class="activity-item">
+                <div class="activity-content">
+                    <div class="contract-address">${contractAddress}</div>
+                    <div class="activity-details">
+                        <span class="activity-chain">${chain}</span>
+                        <span class="activity-divider">•</span>
+                        <span class="activity-user">Shared by ${sharedBy}</span>
+                    </div>
+                </div>
+                <div class="activity-time">${timestamp}</div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = activitiesHtml;
+    
+    // Add click event to copy contract addresses
+    document.querySelectorAll('.contract-address').forEach(element => {
+        element.addEventListener('click', function() {
+            const text = this.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = this.textContent;
+                this.textContent = 'Copied!';
+                this.style.backgroundColor = 'rgba(74, 222, 128, 0.2)';
+                
+                setTimeout(() => {
+                    this.textContent = originalText;
+                    this.style.backgroundColor = '';
+                }, 1500);
+            }).catch(err => {
+                console.error('Failed to copy text: ', err);
+            });
+        });
+        
+        // Add cursor pointer style
+        element.style.cursor = 'pointer';
+        element.title = 'Click to copy';
+    });
 } 

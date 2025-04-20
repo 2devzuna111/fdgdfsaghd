@@ -66,20 +66,32 @@ chrome.runtime.onStartup.addListener(async () => {
 });
 
 // Also check on install
-chrome.runtime.onInstalled.addListener(async () => {
+chrome.runtime.onInstalled.addListener(async (details) => {
     console.log('Service worker installed');
+    
+    // Check if first installation or activation
+    if (details.reason === 'install' || details.reason === 'update') {
+        console.log('Extension installed or updated:', details.reason);
+        
+        // Check if user is already authenticated
+        chrome.storage.local.get(['elaAuthenticated'], function(result) {
+            if (result.elaAuthenticated !== true) {
+                console.log('User not authenticated, opening auth page');
+                
+                // Open the auth page
+                chrome.tabs.create({
+                    url: chrome.runtime.getURL('auth.html')
+                });
+            } else {
+                console.log('User already authenticated, skipping auth page');
+            }
+        });
+    }
+    
     await initializeServiceWorker();
 });
 
 // Listen for extension installation or update
-chrome.runtime.onInstalled.addListener((details) => {
-    console.log('Extension installed or updated:', details.reason);
-    
-    // You can also handle updates if needed
-    // if (details.reason === 'update') {
-    //     // Handle update if needed
-    // }
-});
 
 // Start direct database monitoring
 function startDirectDatabaseMonitoring() {
@@ -432,7 +444,7 @@ async function initializeServiceWorker() {
                 chrome.storage.sync.remove(keysToRemove);
             }
             
-            // Only keep the most recent db notification
+            // Find DB notifications for cleanup but DO NOT display them
             const dbNotifications = globalNotifications
                 .filter(item => 
                     item.data.timestamp >= oneDayAgo && 
@@ -441,12 +453,9 @@ async function initializeServiceWorker() {
                 )
                 .sort((a, b) => b.data.timestamp - a.data.timestamp);
             
-            // Display only most recent notification if any exist
-            if (dbNotifications.length > 0) {
-                console.log(`Found ${dbNotifications.length} db notifications, displaying most recent`);
-                
-                // Get the most recent db notification
-                const latestNotification = dbNotifications[0].data;
+            // Keep only the most recent DB notification in storage and remove others
+            if (dbNotifications.length > 1) {
+                console.log(`Found ${dbNotifications.length} db notifications, keeping only most recent`);
                 
                 // Clear old notification keys (except the latest)
                 const oldNotificationKeys = dbNotifications
@@ -457,26 +466,9 @@ async function initializeServiceWorker() {
                     chrome.storage.sync.remove(oldNotificationKeys);
                 }
                 
-                // Display the latest notification
-                chrome.tabs.query({}, (tabs) => {
-                    tabs.forEach(tab => {
-                        try {
-                            // First clear any existing notifications
-                            chrome.tabs.sendMessage(tab.id, {
-                                action: 'clearDbNotifications'
-                            }).catch(err => console.log('Tab not ready for clearing:', tab.id));
-                            
-                            // Then show the latest notification
-                            chrome.tabs.sendMessage(tab.id, {
-                                action: 'showInAppNotification',
-                                notification: latestNotification,
-                                styleType: 'db-notification'
-                            }).catch(err => console.log('Tab not ready for notifications:', tab.id));
-                        } catch (err) {
-                            console.log('Error sending notification to tab:', err);
-                        }
-                    });
-                });
+                // Important: We no longer display the latest notification on startup
+                // This prevents the issue where users see notifications when no CA was shared
+                console.log('Skipping notification display on startup to prevent false notifications');
             }
         });
         
@@ -808,6 +800,56 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === 'shareWithGroup') {
         console.log('Received shareWithGroup message:', message.data);
         
+        // Check if this contains a contract address that should be added to recent activities
+        if (message.data && message.data.content) {
+            try {
+                // Try to extract contract address from content
+                let contractInfo = null;
+                let contentObj = null;
+                
+                // Try to parse if it's JSON
+                try {
+                    contentObj = typeof message.data.content === 'object' 
+                        ? message.data.content 
+                        : JSON.parse(message.data.content);
+                        
+                    // Check if this is a contract address
+                    if (contentObj.contractAddress || contentObj.address) {
+                        contractInfo = {
+                            address: contentObj.contractAddress || contentObj.address,
+                            chain: contentObj.chain || 'Unknown'
+                        };
+                    }
+                } catch (e) {
+                    // If not JSON, check if it's a raw address using regex
+                    const ethereumMatch = message.data.content.match(/0x[a-fA-F0-9]{40}/);
+                    const solanaMatch = message.data.content.match(/[1-9A-HJ-NP-Za-km-z]{32,44}/);
+                    
+                    if (ethereumMatch) {
+                        contractInfo = {
+                            address: ethereumMatch[0],
+                            chain: 'Ethereum'
+                        };
+                    } else if (solanaMatch) {
+                        contractInfo = {
+                            address: solanaMatch[0],
+                            chain: 'Solana'
+                        };
+                    }
+                }
+                
+                // If we found a contract address, add it to recent activities
+                if (contractInfo) {
+                    console.log('Found contract address in shared content, adding to recent activities');
+                    handleNewContractAddress(contractInfo).catch(e => {
+                        console.error('Error adding contract address to recent activities:', e);
+                    });
+                }
+            } catch (error) {
+                console.error('Error extracting contract address from shared content:', error);
+            }
+        }
+        
         // Make sure Supabase is initialized
         ensureSupabaseInitialized()
             .then(() => shareWithGroup(message.data))
@@ -911,7 +953,8 @@ function detectContractAddress(text) {
     const patterns = {
         ethereum: /0x[a-fA-F0-9]{40}/,
         tron: /T[a-zA-Z0-9]{33}/,
-        bitcoin: /[13][a-km-zA-HJ-NP-Z1-9]{25,34}/
+        bitcoin: /[13][a-km-zA-HJ-NP-Z1-9]{25,34}/,
+        solana: /[1-9A-HJ-NP-Za-km-z]{32,44}/
     };
 
     for (const [chain, pattern] of Object.entries(patterns)) {
@@ -928,25 +971,47 @@ function detectContractAddress(text) {
 
 // Handle new contract address
 async function handleNewContractAddress(contractInfo) {
-    // Get user info
-    const userData = await chrome.storage.local.get(['userName', 'groupId']);
+    console.log('Handling new contract address:', contractInfo);
     
-    if (!userData.userName || !userData.groupId) {
-        console.log('User not logged in or no group selected');
+    if (!contractInfo || (!contractInfo.address && !contractInfo.contractAddress)) {
+        console.error('Invalid contract info provided:', contractInfo);
         return;
     }
-
-    // Create activity object
+    
+    // Get user info
+    const userData = await chrome.storage.local.get(['username', 'groupId']);
+    
+    if (!userData.username) {
+        console.log('User not logged in, using Anonymous');
+        userData.username = 'Anonymous';
+    }
+    
+    // Standardize property names
     const activity = {
-        address: contractInfo.address,
-        chain: contractInfo.chain,
+        contractAddress: contractInfo.contractAddress || contractInfo.address,
+        chain: (contractInfo.chain || 'Unknown').charAt(0).toUpperCase() + (contractInfo.chain || 'Unknown').slice(1), // Capitalize chain name
         timestamp: Date.now(),
-        sharedBy: userData.userName
+        sharedBy: userData.username
     };
 
-    // Save to storage
+    console.log('Created activity object:', activity);
+
+    // Save to recent activities storage
     const result = await chrome.storage.local.get(['recentActivities']);
     const activities = result.recentActivities || [];
+    
+    // Check if this address is already in recent activities to avoid duplicates
+    const duplicate = activities.findIndex(item => 
+        item.contractAddress === activity.contractAddress
+    );
+    
+    if (duplicate !== -1) {
+        console.log('Contract address already exists in recent activities, updating timestamp');
+        // Remove the existing entry, so we can add it to the top with updated timestamp
+        activities.splice(duplicate, 1);
+    }
+    
+    // Add to beginning of array (with updated timestamp if it was a duplicate)
     activities.unshift(activity);
     
     // Keep only last 10 activities
@@ -954,10 +1019,14 @@ async function handleNewContractAddress(contractInfo) {
         activities.pop();
     }
 
+    console.log('Saving updated activities to storage:', activities);
     await chrome.storage.local.set({ recentActivities: activities });
 
     // Notify popup
-    chrome.runtime.sendMessage({ type: 'NEW_ACTIVITY', activity });
+    chrome.runtime.sendMessage({ 
+        type: 'NEW_ACTIVITY', 
+        activity 
+    }).catch(err => console.log('Popup may not be open:', err));
 
     // Send to Discord webhooks if configured
     const webhookData = await chrome.storage.local.get(['webhooks']);
@@ -1003,35 +1072,40 @@ async function handleNewContractAddress(contractInfo) {
         const groupShareData = {
             content: JSON.stringify(activity),
             groupId: userData.groupId,
-            sender: userData.userName || 'Anonymous',
+            sender: userData.username || 'Anonymous',
             timestamp: Date.now(),
             title: 'Contract Address',
             url: ''
         };
         
-        ensureSupabaseInitialized()
-            .then(() => shareWithGroup(groupShareData))
-            .then(() => console.log('Contract address shared with group'))
-            .catch(error => {
-                console.error('Error sharing contract address with group:', error);
-                logErrorToStorage('contractAddressSharing', error.message, activity);
-            });
+        try {
+            await ensureSupabaseInitialized();
+            await shareWithGroup(groupShareData);
+            console.log('Contract address shared with group');
+        } catch (error) {
+            console.error('Error sharing contract address with group:', error);
+            logErrorToStorage('contractAddressSharing', error.message, activity);
+        }
     }
+    
+    return activity;
 }
 
 // Discord webhook integration
 async function sendToDiscord(activity, webhookUrl) {
     try {
+        console.log('Sending to Discord webhook:', activity);
+        
         const payload = {
             username: "Ela Tools",
             embeds: [{
                 title: "New Contract Address Shared",
-                description: `\`${activity.address}\``,
+                description: `\`${activity.contractAddress}\``,
                 color: 0x6366f1,
                 fields: [
                     {
                         name: "Chain",
-                        value: activity.chain.toUpperCase(),
+                        value: activity.chain,
                         inline: true
                     },
                     {
@@ -1044,13 +1118,21 @@ async function sendToDiscord(activity, webhookUrl) {
             }]
         };
 
-        await fetch(webhookUrl, {
+        const response = await fetch(webhookUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
+        
+        if (!response.ok) {
+            throw new Error(`Discord webhook error: ${response.status} ${response.statusText}`);
+        }
+        
+        console.log('Successfully sent to Discord webhook');
+        return true;
     } catch (error) {
         console.error('Error sending to Discord:', error);
+        return false;
     }
 }
 

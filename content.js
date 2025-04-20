@@ -3,9 +3,40 @@
 
 let contractAddress = null;
 
+// List of allowed domains where the extension will work
+const ALLOWED_DOMAINS = [
+    'x.com',
+    'photon-sol.tinyastro.io',
+    'neo.bullx.io',
+    'bullx.io',
+    'axiom.trade'
+];
+
+// Check if current URL is in the allowed domains list
+function isAllowedDomain() {
+    const currentHostname = window.location.hostname;
+    // Remove 'www.' prefix if present for consistent matching
+    const normalizedHostname = currentHostname.replace(/^www\./, '');
+    
+    console.log('Ela Tools: Checking if domain is allowed:', normalizedHostname);
+    
+    return ALLOWED_DOMAINS.some(domain => {
+        // Use endsWith to match subdomains (e.g., sub.example.com matches example.com)
+        return normalizedHostname === domain || normalizedHostname.endsWith('.' + domain);
+    });
+}
+
 // Check if user is authenticated before showing the button
 function initializeElaFeatures() {
-    console.log('Ela Tools: Initializing content script features');
+    console.log('Ela Tools: Checking if domain is allowed for initialization');
+    
+    // Only initialize on allowed domains
+    if (!isAllowedDomain()) {
+        console.log('Ela Tools: Current domain is not in the allowed list, extension disabled');
+        return;
+    }
+    
+    console.log('Ela Tools: Domain allowed, initializing content script features');
     chrome.storage.local.get(['elaAuthenticated'], function(result) {
         if (result.elaAuthenticated === true) {
             console.log('Ela Tools: User is authenticated, creating floating button');
@@ -221,11 +252,11 @@ function createShareButton() {
             border-left: none;
             display: flex;
             flex-direction: column;
-            background: #446E63;
-            border-radius: 12px;
-            box-shadow: none;
-            padding: 8px 14px;
-            border: 1px solid #FDFBF3;
+            background: linear-gradient(135deg, #1A412F 0%, #216545 100%);
+            border-radius: 16px;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.16);
+            padding: 16px;
+            border: 1px solid rgba(164, 216, 190, 0.2);
         }
         
         @keyframes slideIn {
@@ -672,18 +703,20 @@ function createNotificationContainer() {
         .ela-notification.success {
             display: flex;
             flex-direction: column;
-            background: linear-gradient(135deg, #275D42 0%, #3E8964 100%);
+            background: linear-gradient(135deg, #18543A 0%, #2C6E4A 100%);
             color: #FFFFFF;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
         }
         
         .ela-notification.db-notification {
             display: flex;
             flex-direction: column;
-            background: linear-gradient(135deg, #275D42 0%, #1A4A33 100%);
+            background: linear-gradient(135deg, #1A412F 0%, #216545 100%);
             border-radius: 16px;
             box-shadow: 0 12px 24px rgba(0, 0, 0, 0.16);
             padding: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(164, 216, 190, 0.2);
         }
         
         .ela-notification.success .notification-header,
@@ -702,7 +735,7 @@ function createNotificationContainer() {
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(74, 222, 128, 0.2);
             border-radius: 50%;
             padding: 6px;
         }
@@ -755,7 +788,7 @@ function createNotificationContainer() {
         .ela-notification.success .notification-detail-value,
         .ela-notification.db-notification .notification-detail-value {
             color: #FFFFFF;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(74, 222, 128, 0.15);
             padding: 4px 8px;
             border-radius: 4px;
             font-family: monospace;
@@ -778,7 +811,7 @@ function createNotificationContainer() {
             margin-bottom: 10px;
             line-height: 1.4;
             color: #FFFFFF;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(74, 222, 128, 0.15);
             padding: 8px 12px;
             border-radius: 8px;
             font-family: monospace;
@@ -807,11 +840,11 @@ function createNotificationContainer() {
             position: absolute;
             top: 12px;
             right: 12px;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(74, 222, 128, 0.15);
             border: none;
             padding: 4px;
             cursor: pointer;
-            color: rgba(255, 255, 255, 0.7);
+            color: rgba(255, 255, 255, 0.8);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -822,13 +855,13 @@ function createNotificationContainer() {
         }
         
         .ela-notification .close-button:hover {
-            background-color: rgba(255, 255, 255, 0.2);
+            background-color: rgba(74, 222, 128, 0.25);
             color: #FFFFFF;
         }
         
         .ela-notification .action-button {
             padding: 8px 16px;
-            background-color: rgba(255, 255, 255, 0.15);
+            background-color: rgba(74, 222, 128, 0.25);
             color: white;
             border: none;
             border-radius: 8px;
@@ -841,7 +874,7 @@ function createNotificationContainer() {
         }
         
         .ela-notification .action-button:hover {
-            background-color: rgba(255, 255, 255, 0.25);
+            background-color: rgba(74, 222, 128, 0.35);
             transform: translateY(-1px);
         }
         
@@ -860,7 +893,7 @@ function createNotificationContainer() {
             bottom: -30px;
             left: 50%;
             transform: translateX(-50%);
-            background-color: #4ADE80;
+            background-color: #2C6E4A;
             color: white;
             padding: 5px 12px;
             border-radius: 8px;
@@ -1132,19 +1165,113 @@ function showInAppNotification(notification, styleType = '') {
     return notificationEl;
 }
 
-// Function specifically for success notifications like "CA shared successfully"
+// Function to show a success notification for contract address sharing
 function showSupabaseSuccessNotification(data) {
-    const notification = {
-        title: '✓ Contract Address Shared',
-        content: data.content || '',
-        url: data.url || '',
-        timestamp: Date.now(),
-        noIcon: false,  // Show the icon
-        autoHide: true,  // Auto hide without OK button
-        hideTime: 2500   // Hide after 2.5 seconds
-    };
-    
-    return showInAppNotification(notification, 'db-notification');
+    try {
+        console.log('Showing success notification for shared content:', data);
+        
+        // Show a standard success notification
+        showInAppNotification({
+            title: '✓ Contract Address Shared',
+            message: `Successfully shared: ${data.content.substring(0, 40)}${data.content.length > 40 ? '...' : ''}`,
+            context: data.groupId ? `Group: ${data.groupId}` : '',
+            timestamp: Date.now(),
+            hideTime: 2500,
+            type: 'success'
+        }, 'success');
+        
+        // Add to recent activities in storage
+        updateRecentActivities(data);
+    } catch (error) {
+        console.error('Error showing success notification:', error);
+    }
+}
+
+// Function to add shared contract address to recent activities
+async function updateRecentActivities(data) {
+    try {
+        // Extract contract address information
+        let contractInfo = null;
+        
+        // Try to parse content if it's JSON
+        try {
+            const contentObj = typeof data.content === 'object' 
+                ? data.content 
+                : JSON.parse(data.content);
+                
+            // Check if this is a contract address object
+            if (contentObj.contractAddress || contentObj.address) {
+                contractInfo = {
+                    contractAddress: contentObj.contractAddress || contentObj.address,
+                    chain: contentObj.chain || 'Unknown',
+                    timestamp: Date.now(),
+                    sharedBy: data.sender || 'Anonymous'
+                };
+            }
+        } catch (parseError) {
+            // If not JSON, check if it's a raw contract address by pattern matching
+            console.log('Content is not JSON, checking if it\'s a raw address');
+            
+            // Simple pattern matching for contract addresses
+            const ethereumMatch = data.content.match(/0x[a-fA-F0-9]{40}/);
+            const solanaMatch = data.content.match(/[1-9A-HJ-NP-Za-km-z]{32,44}/);
+            
+            if (ethereumMatch) {
+                contractInfo = {
+                    contractAddress: ethereumMatch[0],
+                    chain: 'Ethereum',
+                    timestamp: Date.now(),
+                    sharedBy: data.sender || 'Anonymous'
+                };
+            } else if (solanaMatch) {
+                contractInfo = {
+                    contractAddress: solanaMatch[0],
+                    chain: 'Solana',
+                    timestamp: Date.now(),
+                    sharedBy: data.sender || 'Anonymous'
+                };
+            }
+        }
+        
+        // If we identified a contract address, add it to recent activities
+        if (contractInfo) {
+            console.log('Adding to recent activities:', contractInfo);
+            
+            // Get existing activities
+            const { recentActivities = [] } = await chrome.storage.local.get(['recentActivities']);
+            
+            // Check if this address is already in recent activities to avoid duplicates
+            const isDuplicate = recentActivities.some(
+                activity => activity.contractAddress === contractInfo.contractAddress
+            );
+            
+            if (!isDuplicate) {
+                // Add to beginning of array
+                recentActivities.unshift(contractInfo);
+                
+                // Keep only last 10 activities
+                if (recentActivities.length > 10) {
+                    recentActivities.pop();
+                }
+                
+                // Save updated activities
+                await chrome.storage.local.set({ recentActivities });
+                console.log('Recent activities updated in storage');
+                
+                // Notify popup to update UI
+                chrome.runtime.sendMessage({ 
+                    type: 'NEW_ACTIVITY', 
+                    activity: contractInfo 
+                }).catch(err => console.log('Popup may not be open:', err));
+            } else {
+                console.log('Contract address already in recent activities, skipping');
+            }
+        } else {
+            console.log('No valid contract address found in shared content');
+        }
+    } catch (error) {
+        console.error('Error updating recent activities:', error);
+    }
 }
 
 // Function to clear all DB notifications
