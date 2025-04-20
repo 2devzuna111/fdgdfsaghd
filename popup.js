@@ -345,355 +345,373 @@ async function loadWebhooks() {
 
 // Setup event listeners
 function setupEventListeners() {
-    console.log('Setting up event listeners');
-    
-    // Test Webhook Button
-    const testWebhookBtn = document.getElementById('testWebhook');
-    if (testWebhookBtn) {
-        testWebhookBtn.addEventListener('click', async () => {
-            console.log('Test webhook button clicked');
-            const webhookUrl = document.getElementById('webhookUrl');
-            const webhookStatus = document.getElementById('webhookStatus');
-            
-            if (!webhookUrl || !webhookStatus) {
-                console.error('Webhook elements not found');
-                return;
-            }
-            
-            const url = webhookUrl.value.trim();
-            if (!url) {
-                showStatus(webhookStatus, 'Please enter a webhook URL to test', 'error');
-                return;
-            }
-            
-            showStatus(webhookStatus, 'Testing webhook...', 'info');
-            
-            try {
-                // Test webhook
-                const result = await testWebhook(url);
-                
-                if (result.success) {
-                    showStatus(webhookStatus, 'Webhook test successful!', 'success');
-                } else {
-                    showStatus(webhookStatus, 'Error: ' + result.error, 'error');
+    try {
+        console.log('Setting up event listeners');
+        
+        // Navigation links
+        const navLinks = document.querySelectorAll('.nav-link');
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                const href = link.getAttribute('href');
+                if (href && href !== '#') {
+                    e.preventDefault();
+                    if (href === 'trackers.html') {
+                        chrome.runtime.sendMessage({ action: 'openTrackers' });
+                    }
                 }
-            } catch (error) {
-                console.error('Error testing webhook:', error);
-                showStatus(webhookStatus, 'Error: ' + error.message, 'error');
-            }
+            });
         });
-    }
-    
-    // Add webhook
-    const addWebhookBtn = document.getElementById('addWebhook');
-    const webhookName = document.getElementById('webhookName');
-    const webhookUrl = document.getElementById('webhookUrl');
-    const webhookStatus = document.getElementById('webhookStatus');
-    
-    if (addWebhookBtn && webhookName && webhookUrl && webhookStatus) {
-        addWebhookBtn.addEventListener('click', async () => {
-            console.log('Add webhook button clicked');
-            const name = webhookName.value.trim();
-            const url = webhookUrl.value.trim();
-            
-            console.log('Adding webhook with name:', name, 'and URL:', url);
-            
-            if (!name || !url) {
-                console.log('Missing webhook name or URL');
-                showStatus(webhookStatus, 'Please enter both name and URL', 'error');
-                return;
-            }
-            
-            showStatus(webhookStatus, 'Adding webhook...', 'info');
-            
-            try {
-                // Get current webhooks
-                console.log('Fetching current webhooks from storage');
-                const result = await chrome.storage.local.get(['webhooks']);
-                console.log('Retrieved webhooks from storage:', result);
+        
+        // Test Webhook Button
+        const testWebhookBtn = document.getElementById('testWebhook');
+        if (testWebhookBtn) {
+            testWebhookBtn.addEventListener('click', async () => {
+                console.log('Test webhook button clicked');
+                const webhookUrl = document.getElementById('webhookUrl');
+                const webhookStatus = document.getElementById('webhookStatus');
                 
-                // Initialize webhooks object if it doesn't exist
-                const webhooks = result.webhooks || {};
-                console.log('Current webhooks:', webhooks);
-                
-                // Check if webhook with same name already exists
-                if (webhooks[name]) {
-                    console.log('Webhook with this name already exists');
-                    showStatus(webhookStatus, `Webhook "${name}" already exists`, 'error');
+                if (!webhookUrl || !webhookStatus) {
+                    console.error('Webhook elements not found');
                     return;
                 }
                 
-                // Add webhook
-                webhooks[name] = url;
-                console.log('Updated webhooks object:', webhooks);
+                const url = webhookUrl.value.trim();
+                if (!url) {
+                    showStatus(webhookStatus, 'Please enter a webhook URL to test', 'error');
+                    return;
+                }
                 
-                // Save to storage
-                console.log('Saving webhooks to storage');
-                await chrome.storage.local.set({ webhooks });
-                console.log('Webhooks saved successfully');
-                
-                // Debug: verify storage
-                const verifyResult = await chrome.storage.local.get(['webhooks']);
-                console.log('Verification - webhooks in storage after save:', verifyResult);
-                
-                // Clear inputs
-                webhookName.value = '';
-                webhookUrl.value = '';
-                showStatus(webhookStatus, 'Webhook added successfully!', 'success');
-                
-                // Automatically test the new webhook
-                console.log('Automatically testing new webhook');
-                showStatus(webhookStatus, 'Testing new webhook...', 'info');
+                showStatus(webhookStatus, 'Testing webhook...', 'info');
                 
                 try {
-                    const testResult = await testWebhook(url);
-                    if (testResult.success) {
-                        showStatus(webhookStatus, 'Webhook added and tested successfully!', 'success');
+                    // Test webhook
+                    const result = await testWebhook(url);
+                    
+                    if (result.success) {
+                        showStatus(webhookStatus, 'Webhook test successful!', 'success');
                     } else {
-                        showStatus(webhookStatus, 'Webhook added but test failed: ' + testResult.error, 'warning');
+                        showStatus(webhookStatus, 'Error: ' + result.error, 'error');
                     }
-                } catch (testError) {
-                    console.error('Error testing new webhook:', testError);
-                    // Don't let test failure prevent adding the webhook
-                    showStatus(webhookStatus, 'Webhook added, but test failed: ' + testError.message, 'warning');
+                } catch (error) {
+                    console.error('Error testing webhook:', error);
+                    showStatus(webhookStatus, 'Error: ' + error.message, 'error');
+                }
+            });
+        }
+        
+        // Add webhook
+        const addWebhookBtn = document.getElementById('addWebhook');
+        const webhookName = document.getElementById('webhookName');
+        const webhookUrl = document.getElementById('webhookUrl');
+        const webhookStatus = document.getElementById('webhookStatus');
+        
+        if (addWebhookBtn && webhookName && webhookUrl && webhookStatus) {
+            addWebhookBtn.addEventListener('click', async () => {
+                console.log('Add webhook button clicked');
+                const name = webhookName.value.trim();
+                const url = webhookUrl.value.trim();
+                
+                console.log('Adding webhook with name:', name, 'and URL:', url);
+                
+                if (!name || !url) {
+                    console.log('Missing webhook name or URL');
+                    showStatus(webhookStatus, 'Please enter both name and URL', 'error');
+                    return;
                 }
                 
-                // Reload the webhooks list
-                console.log('Reloading webhooks list');
-                await loadWebhooks();
-            } catch (error) {
-                console.error('Error adding webhook:', error);
-                showStatus(webhookStatus, 'Error: ' + error.message, 'error');
-            }
-        });
-    } else {
-        console.error('Webhook elements not found', { 
-            addWebhookBtn, webhookName, webhookUrl, webhookStatus 
-        });
-    }
-    
-    // Join Group button
-    const joinGroupBtn = document.getElementById('joinGroup');
-    const groupIdInput = document.getElementById('groupId'); // Correct ID from HTML
-    const groupStatus = document.getElementById('groupStatus');
-    
-    if (joinGroupBtn && groupIdInput && groupStatus) {
-        joinGroupBtn.addEventListener('click', async () => {
-            console.log('Join group button clicked');
-            const groupId = groupIdInput.value.trim();
-            
-            if (!groupId) {
-                showStatus(groupStatus, 'Please enter a group ID', 'error');
-                return;
-            }
-            
-            showStatus(groupStatus, 'Joining group...', 'info');
-            
-            try {
-                // Create a promise that wraps the message sending with a timeout
-                const messagePromise = new Promise((resolve, reject) => {
-                    // Set a timeout in case the background script doesn't respond
-                    const timeoutId = setTimeout(() => {
-                        console.log('Background script response timeout, saving group ID locally');
-                        // Save the group ID locally even if the background script doesn't respond
-                        chrome.storage.local.set({ groupId });
-                        resolve({ 
-                            success: true, 
-                            message: 'Group ID saved (background script did not respond)', 
-                            fallback: true 
-                        });
-                    }, 3000); // 3 second timeout
-                    
-                    // Send message to background script
-                    chrome.runtime.sendMessage(
-                        { action: 'joinGroup', groupId: groupId },
-                        (response) => {
-                            // Clear the timeout since we got a response
-                            clearTimeout(timeoutId);
-                            
-                            if (chrome.runtime.lastError) {
-                                console.error('Error joining group:', chrome.runtime.lastError);
-                                // Handle message port closure errors by still saving the group ID
-                                if (chrome.runtime.lastError.message.includes('message port closed')) {
-                                    chrome.storage.local.set({ groupId });
-                                    resolve({ 
-                                        success: true, 
-                                        message: 'Group ID saved (connection to background lost)', 
-                                        error: chrome.runtime.lastError.message,
-                                        fallback: true 
-                                    });
-                                } else {
-                                    reject(new Error(chrome.runtime.lastError.message));
-                                }
-                                return;
-                            }
-                            
-                            resolve(response || { success: false, error: 'No response from background' });
-                        }
-                    );
-                });
+                showStatus(webhookStatus, 'Adding webhook...', 'info');
                 
-                // Wait for the promise to resolve
-                const response = await messagePromise;
-                console.log('Join group response:', response);
-                
-                if (response && response.success) {
-                    // Update display
-                    const groupDisplay = document.getElementById('groupDisplay');
-                    if (groupDisplay) {
-                        groupDisplay.textContent = `Group: ${groupId}`;
-                    }
-                    
-                    showStatus(groupStatus, response.fallback 
-                        ? 'Group ID saved successfully!' 
-                        : 'Joined group successfully!', 'success');
-                } else {
-                    const errorMsg = response?.error || 'Unknown error';
-                    showStatus(groupStatus, 'Error joining group: ' + errorMsg, 'error');
-                }
-            } catch (error) {
-                console.error('Error joining group:', error);
-                
-                // Save anyway since this is a UI operation that shouldn't fail
                 try {
-                    chrome.storage.local.set({ groupId });
+                    // Get current webhooks
+                    console.log('Fetching current webhooks from storage');
+                    const result = await chrome.storage.local.get(['webhooks']);
+                    console.log('Retrieved webhooks from storage:', result);
                     
-                    // Update display even if there's an error
-                    const groupDisplay = document.getElementById('groupDisplay');
-                    if (groupDisplay) {
-                        groupDisplay.textContent = `Group: ${groupId}`;
+                    // Initialize webhooks object if it doesn't exist
+                    const webhooks = result.webhooks || {};
+                    console.log('Current webhooks:', webhooks);
+                    
+                    // Check if webhook with same name already exists
+                    if (webhooks[name]) {
+                        console.log('Webhook with this name already exists');
+                        showStatus(webhookStatus, `Webhook "${name}" already exists`, 'error');
+                        return;
                     }
                     
-                    showStatus(groupStatus, 'Group ID saved despite error: ' + error.message, 'warning');
-                } catch (storageError) {
-                    showStatus(groupStatus, 'Error: ' + storageError.message, 'error');
+                    // Add webhook
+                    webhooks[name] = url;
+                    console.log('Updated webhooks object:', webhooks);
+                    
+                    // Save to storage
+                    console.log('Saving webhooks to storage');
+                    await chrome.storage.local.set({ webhooks });
+                    console.log('Webhooks saved successfully');
+                    
+                    // Debug: verify storage
+                    const verifyResult = await chrome.storage.local.get(['webhooks']);
+                    console.log('Verification - webhooks in storage after save:', verifyResult);
+                    
+                    // Clear inputs
+                    webhookName.value = '';
+                    webhookUrl.value = '';
+                    showStatus(webhookStatus, 'Webhook added successfully!', 'success');
+                    
+                    // Automatically test the new webhook
+                    console.log('Automatically testing new webhook');
+                    showStatus(webhookStatus, 'Testing new webhook...', 'info');
+                    
+                    try {
+                        const testResult = await testWebhook(url);
+                        if (testResult.success) {
+                            showStatus(webhookStatus, 'Webhook added and tested successfully!', 'success');
+                        } else {
+                            showStatus(webhookStatus, 'Webhook added but test failed: ' + testResult.error, 'warning');
+                        }
+                    } catch (testError) {
+                        console.error('Error testing new webhook:', testError);
+                        // Don't let test failure prevent adding the webhook
+                        showStatus(webhookStatus, 'Webhook added, but test failed: ' + testError.message, 'warning');
+                    }
+                    
+                    // Reload the webhooks list
+                    console.log('Reloading webhooks list');
+                    await loadWebhooks();
+                } catch (error) {
+                    console.error('Error adding webhook:', error);
+                    showStatus(webhookStatus, 'Error: ' + error.message, 'error');
                 }
-            }
-        });
-    } else {
-        console.error('Group elements not found', { 
-            joinGroupBtn, groupIdInput, groupStatus 
-        });
-    }
-    
-    // Save Profile button
-    const saveProfileBtn = document.getElementById('saveProfile');
-    const usernameInput = document.getElementById('username');
-    const profileStatus = document.getElementById('profileStatus');
-    
-    if (saveProfileBtn && usernameInput && profileStatus) {
-        saveProfileBtn.addEventListener('click', async () => {
-            console.log('Save profile button clicked');
-            const username = usernameInput.value.trim();
-            
-            if (!username) {
-                showStatus(profileStatus, 'Please enter a username', 'error');
-                return;
-            }
-            
-            showStatus(profileStatus, 'Saving profile...', 'info');
-            
-            try {
-                // Save username
-                await chrome.storage.local.set({ 
-                    username,
-                    elaAuthenticated: true
-                });
-                
-                // Update UI
-                const userStatus = document.getElementById('userStatus');
-                const userAvatar = document.getElementById('userAvatar');
-                
-                if (userStatus) {
-                    userStatus.textContent = username;
-                }
-                
-                if (userAvatar) {
-                    userAvatar.textContent = username.charAt(0).toUpperCase();
-                }
-                
-                showStatus(profileStatus, 'Profile saved successfully!', 'success');
-            } catch (error) {
-                console.error('Error saving profile:', error);
-                showStatus(profileStatus, 'Error: ' + error.message, 'error');
-            }
-        });
-    } else {
-        console.error('Profile elements not found', { 
-            saveProfileBtn, usernameInput, profileStatus 
-        });
-    }
-    
-    // Monitor toggle
-    const monitorToggle = document.getElementById('monitorToggle');
-    if (monitorToggle) {
-        // Set initial state from storage
-        chrome.storage.local.get(['clipboardEnabled'], (result) => {
-            monitorToggle.checked = result.clipboardEnabled !== false;
-        });
+            });
+        } else {
+            console.error('Webhook elements not found', { 
+                addWebhookBtn, webhookName, webhookUrl, webhookStatus 
+            });
+        }
         
-        // Add change listener
-        monitorToggle.addEventListener('change', () => {
-            const enabled = monitorToggle.checked;
-            chrome.storage.local.set({ clipboardEnabled: enabled });
-            console.log('Clipboard monitoring ' + (enabled ? 'enabled' : 'disabled'));
-        });
-    }
-    
-    // Add click handler to Recent Activity section title to test adding a new Solana address
-    const activityTitle = document.querySelector('.right-panel .section-title');
-    if (activityTitle && activityTitle.textContent.includes('Recent Activity')) {
-        activityTitle.style.cursor = 'pointer';
-        activityTitle.title = 'Click to add a test Solana address';
+        // Join Group button
+        const joinGroupBtn = document.getElementById('joinGroup');
+        const groupIdInput = document.getElementById('groupId'); // Correct ID from HTML
+        const groupStatus = document.getElementById('groupStatus');
         
-        activityTitle.addEventListener('click', async () => {
-            console.log('Recent Activity title clicked, adding test Solana address');
-            
-            // Generate random Solana-like address
-            const randomSolAddress = generateRandomSolanaAddress();
-            
-            // Get user info
-            const { username = 'Anonymous' } = await chrome.storage.local.get(['username']);
-            
-            // Create new activity
-            const newActivity = {
-                contractAddress: randomSolAddress,
-                chain: 'Solana',
-                sharedBy: username,
-                timestamp: Date.now()
-            };
-            
-            // Add to recent activities
-            const { recentActivities = [] } = await chrome.storage.local.get(['recentActivities']);
-            recentActivities.unshift(newActivity);
-            
-            // Keep only last 10 activities
-            if (recentActivities.length > 10) {
-                recentActivities.pop();
-            }
-            
-            // Save updated activities
-            await chrome.storage.local.set({ recentActivities });
-            
-            // Reload activities
-            await loadRecentActivities();
-            
-            // Show success message
-            const activitiesList = document.getElementById('activitiesList');
-            if (activitiesList) {
-                const statusMessage = document.createElement('div');
-                statusMessage.className = 'status success';
-                statusMessage.style.display = 'block';
-                statusMessage.textContent = 'Added new test Solana address';
-                activitiesList.prepend(statusMessage);
+        if (joinGroupBtn && groupIdInput && groupStatus) {
+            joinGroupBtn.addEventListener('click', async () => {
+                console.log('Join group button clicked');
+                const groupId = groupIdInput.value.trim();
                 
-                // Auto-hide message
-                setTimeout(() => {
-                    statusMessage.style.opacity = '0';
-                    setTimeout(() => statusMessage.remove(), 500);
-                }, 2000);
-            }
-        });
+                if (!groupId) {
+                    showStatus(groupStatus, 'Please enter a group ID', 'error');
+                    return;
+                }
+                
+                showStatus(groupStatus, 'Joining group...', 'info');
+                
+                try {
+                    // Create a promise that wraps the message sending with a timeout
+                    const messagePromise = new Promise((resolve, reject) => {
+                        // Set a timeout in case the background script doesn't respond
+                        const timeoutId = setTimeout(() => {
+                            console.log('Background script response timeout, saving group ID locally');
+                            // Save the group ID locally even if the background script doesn't respond
+                            chrome.storage.local.set({ groupId });
+                            resolve({ 
+                                success: true, 
+                                message: 'Group ID saved (background script did not respond)', 
+                                fallback: true 
+                            });
+                        }, 3000); // 3 second timeout
+                        
+                        // Send message to background script
+                        chrome.runtime.sendMessage(
+                            { action: 'joinGroup', groupId: groupId },
+                            (response) => {
+                                // Clear the timeout since we got a response
+                                clearTimeout(timeoutId);
+                                
+                                if (chrome.runtime.lastError) {
+                                    console.error('Error joining group:', chrome.runtime.lastError);
+                                    // Handle message port closure errors by still saving the group ID
+                                    if (chrome.runtime.lastError.message.includes('message port closed')) {
+                                        chrome.storage.local.set({ groupId });
+                                        resolve({ 
+                                            success: true, 
+                                            message: 'Group ID saved (connection to background lost)', 
+                                            error: chrome.runtime.lastError.message,
+                                            fallback: true 
+                                        });
+                                    } else {
+                                        reject(new Error(chrome.runtime.lastError.message));
+                                    }
+                                    return;
+                                }
+                                
+                                resolve(response || { success: false, error: 'No response from background' });
+                            }
+                        );
+                    });
+                    
+                    // Wait for the promise to resolve
+                    const response = await messagePromise;
+                    console.log('Join group response:', response);
+                    
+                    if (response && response.success) {
+                        // Update display
+                        const groupDisplay = document.getElementById('groupDisplay');
+                        if (groupDisplay) {
+                            groupDisplay.textContent = `Group: ${groupId}`;
+                        }
+                        
+                        showStatus(groupStatus, response.fallback 
+                            ? 'Group ID saved successfully!' 
+                            : 'Joined group successfully!', 'success');
+                    } else {
+                        const errorMsg = response?.error || 'Unknown error';
+                        showStatus(groupStatus, 'Error joining group: ' + errorMsg, 'error');
+                    }
+                } catch (error) {
+                    console.error('Error joining group:', error);
+                    
+                    // Save anyway since this is a UI operation that shouldn't fail
+                    try {
+                        chrome.storage.local.set({ groupId });
+                        
+                        // Update display even if there's an error
+                        const groupDisplay = document.getElementById('groupDisplay');
+                        if (groupDisplay) {
+                            groupDisplay.textContent = `Group: ${groupId}`;
+                        }
+                        
+                        showStatus(groupStatus, 'Group ID saved despite error: ' + error.message, 'warning');
+                    } catch (storageError) {
+                        showStatus(groupStatus, 'Error: ' + storageError.message, 'error');
+                    }
+                }
+            });
+        } else {
+            console.error('Group elements not found', { 
+                joinGroupBtn, groupIdInput, groupStatus 
+            });
+        }
+        
+        // Save Profile button
+        const saveProfileBtn = document.getElementById('saveProfile');
+        const usernameInput = document.getElementById('username');
+        const profileStatus = document.getElementById('profileStatus');
+        
+        if (saveProfileBtn && usernameInput && profileStatus) {
+            saveProfileBtn.addEventListener('click', async () => {
+                console.log('Save profile button clicked');
+                const username = usernameInput.value.trim();
+                
+                if (!username) {
+                    showStatus(profileStatus, 'Please enter a username', 'error');
+                    return;
+                }
+                
+                showStatus(profileStatus, 'Saving profile...', 'info');
+                
+                try {
+                    // Save username
+                    await chrome.storage.local.set({ 
+                        username,
+                        elaAuthenticated: true
+                    });
+                    
+                    // Update UI
+                    const userStatus = document.getElementById('userStatus');
+                    const userAvatar = document.getElementById('userAvatar');
+                    
+                    if (userStatus) {
+                        userStatus.textContent = username;
+                    }
+                    
+                    if (userAvatar) {
+                        userAvatar.textContent = username.charAt(0).toUpperCase();
+                    }
+                    
+                    showStatus(profileStatus, 'Profile saved successfully!', 'success');
+                } catch (error) {
+                    console.error('Error saving profile:', error);
+                    showStatus(profileStatus, 'Error: ' + error.message, 'error');
+                }
+            });
+        } else {
+            console.error('Profile elements not found', { 
+                saveProfileBtn, usernameInput, profileStatus 
+            });
+        }
+        
+        // Monitor toggle
+        const monitorToggle = document.getElementById('monitorToggle');
+        if (monitorToggle) {
+            // Set initial state from storage
+            chrome.storage.local.get(['clipboardEnabled'], (result) => {
+                monitorToggle.checked = result.clipboardEnabled !== false;
+            });
+            
+            // Add change listener
+            monitorToggle.addEventListener('change', () => {
+                const enabled = monitorToggle.checked;
+                chrome.storage.local.set({ clipboardEnabled: enabled });
+                console.log('Clipboard monitoring ' + (enabled ? 'enabled' : 'disabled'));
+            });
+        }
+        
+        // Add click handler to Recent Activity section title to test adding a new Solana address
+        const activityTitle = document.querySelector('.right-panel .section-title');
+        if (activityTitle && activityTitle.textContent.includes('Recent Activity')) {
+            activityTitle.style.cursor = 'pointer';
+            activityTitle.title = 'Click to add a test Solana address';
+            
+            activityTitle.addEventListener('click', async () => {
+                console.log('Recent Activity title clicked, adding test Solana address');
+                
+                // Generate random Solana-like address
+                const randomSolAddress = generateRandomSolanaAddress();
+                
+                // Get user info
+                const { username = 'Anonymous' } = await chrome.storage.local.get(['username']);
+                
+                // Create new activity
+                const newActivity = {
+                    contractAddress: randomSolAddress,
+                    chain: 'Solana',
+                    sharedBy: username,
+                    timestamp: Date.now()
+                };
+                
+                // Add to recent activities
+                const { recentActivities = [] } = await chrome.storage.local.get(['recentActivities']);
+                recentActivities.unshift(newActivity);
+                
+                // Keep only last 10 activities
+                if (recentActivities.length > 10) {
+                    recentActivities.pop();
+                }
+                
+                // Save updated activities
+                await chrome.storage.local.set({ recentActivities });
+                
+                // Reload activities
+                await loadRecentActivities();
+                
+                // Show success message
+                const activitiesList = document.getElementById('activitiesList');
+                if (activitiesList) {
+                    const statusMessage = document.createElement('div');
+                    statusMessage.className = 'status success';
+                    statusMessage.style.display = 'block';
+                    statusMessage.textContent = 'Added new test Solana address';
+                    activitiesList.prepend(statusMessage);
+                    
+                    // Auto-hide message
+                    setTimeout(() => {
+                        statusMessage.style.opacity = '0';
+                        setTimeout(() => statusMessage.remove(), 500);
+                    }, 2000);
+                }
+            });
+        }
+    } catch (error) {
+        console.error('Error setting up event listeners:', error);
     }
 }
 

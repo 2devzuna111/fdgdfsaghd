@@ -929,6 +929,21 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             });
         return true;
     }
+    
+    // Handle requests to open extension pages
+    if (message.action === 'openPopup') {
+        console.log('Opening extension popup');
+        chrome.tabs.create({ url: chrome.runtime.getURL('popup.html') });
+        sendResponse({ success: true });
+        return true;
+    }
+    
+    if (message.action === 'openTrackers') {
+        console.log('Opening extension trackers page');
+        chrome.tabs.create({ url: chrome.runtime.getURL('trackers.html') });
+        sendResponse({ success: true });
+        return true;
+    }
 });
 
 // Clipboard monitoring

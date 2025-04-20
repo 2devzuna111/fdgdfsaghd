@@ -1175,7 +1175,7 @@ function showSupabaseSuccessNotification(data) {
             title: '✓ Contract Address Shared',
             message: `Successfully shared: ${data.content.substring(0, 40)}${data.content.length > 40 ? '...' : ''}`,
             context: data.groupId ? `Group: ${data.groupId}` : '',
-            timestamp: Date.now(),
+        timestamp: Date.now(),
             hideTime: 2500,
             type: 'success'
         }, 'success');
