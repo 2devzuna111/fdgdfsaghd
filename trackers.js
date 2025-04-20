@@ -362,22 +362,113 @@ function showNotification(message, type = 'info') {
 }
 
 // Initialize everything when the DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    initializeUserData();
-    fetchTrackerData();
-    setupCopyButtons();
-    setupActionButtons();
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize user info
+    const userAvatarEl = document.getElementById('userAvatar');
+    const userStatusEl = document.getElementById('userStatus');
     
-    // Setup navigation
-    const navLinks = document.querySelectorAll('.nav-link');
-    navLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            if (link.getAttribute('href') === 'popup.html') {
-                e.preventDefault();
-                chrome.runtime.sendMessage({ action: 'openPopup' });
-            }
+    if (userAvatarEl && userStatusEl) {
+        userAvatarEl.textContent = 'U';
+        userStatusEl.textContent = 'Connected';
+    }
+    
+    // Add click handlers for tweet interactions
+    const tweetStats = document.querySelectorAll('.tweet-stat');
+    tweetStats.forEach(stat => {
+        stat.addEventListener('click', function() {
+            const currentCount = parseInt(this.textContent.trim().replace(/[^\d]/g, ''));
+            // Increment count
+            const newCount = currentCount + 1;
+            // Update text content preserving the icon
+            const icon = this.querySelector('svg').outerHTML;
+            this.innerHTML = icon + ' ' + formatCount(newCount);
+            
+            // Add a temporary highlight effect
+            this.style.color = 'var(--accent)';
+            setTimeout(() => {
+                if (!this.matches(':hover')) {
+                    if (this.classList.contains('retweet')) {
+                        this.style.color = 'var(--success)';
+                    } else {
+                        this.style.color = '';
+                    }
+                }
+            }, 1000);
         });
     });
+    
+    // Handle refresh button
+    const refreshButton = document.querySelector('.action-button:first-of-type');
+    if (refreshButton) {
+        refreshButton.addEventListener('click', function() {
+            // Show loading state
+            this.classList.add('loading');
+            this.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="spin"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"></path><path d="M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>';
+            
+            // Simulate loading delay
+            setTimeout(() => {
+                // Update times
+                updateTweetTimes();
+                
+                // Reset button
+                this.classList.remove('loading');
+                this.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"></path><path d="M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg> Refresh';
+            }, 1200);
+        });
+    }
+    
+    // Handle search input
+    const searchInput = document.querySelector('.search-input input');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const tweetRows = document.querySelectorAll('.left-side .tracker-table tbody tr');
+            
+            tweetRows.forEach(row => {
+                const tweetText = row.querySelector('.tweet-text').textContent.toLowerCase();
+                const accountName = row.querySelector('.token-name').textContent.toLowerCase();
+                
+                if (tweetText.includes(searchTerm) || accountName.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    }
+    
+    // Utility functions
+    function formatCount(count) {
+        if (count >= 1000) {
+            return (count / 1000).toFixed(1) + 'K';
+        }
+        return count.toString();
+    }
+    
+    function updateTweetTimes() {
+        const times = ['Just now', '1 min ago', '3 mins ago', '7 mins ago', '15 mins ago'];
+        const timeElements = document.querySelectorAll('.left-side .tracker-table tbody tr td:nth-child(3)');
+        
+        timeElements.forEach((el, index) => {
+            el.textContent = times[index % times.length];
+        });
+    }
+    
+    // Add spinning animation for refresh icon
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .spin {
+            animation: spin 1s linear infinite;
+        }
+        .loading {
+            opacity: 0.8;
+            pointer-events: none;
+        }
+    `;
+    document.head.appendChild(style);
 });
 
 // Listen for messages from the extension
