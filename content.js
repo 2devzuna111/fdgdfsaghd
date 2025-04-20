@@ -362,9 +362,12 @@ function createShareButton() {
             
             // Get user info and group
             chrome.storage.local.get(['webhooks', 'username', 'groupId'], async (result) => {
-                const webhooks = result.webhooks || [];
+                const webhooksObj = result.webhooks || {};
                 const username = result.username || 'Anonymous';
                 const groupId = result.groupId || '';
+                
+                // Convert webhooks object to array of URLs
+                const webhookUrls = Object.values(webhooksObj);
                 
                 // Get current page info
                 const currentUrl = window.location.href;
@@ -378,16 +381,18 @@ function createShareButton() {
                 showTooltip('Sending to webhooks...');
                 
                 // Send to Discord webhooks directly without relying on background
-                if (webhooks && webhooks.length > 0) {
+                if (webhookUrls.length > 0) {
                     try {
+                        console.log(`Sending to ${webhookUrls.length} webhooks`);
+                        
                         // Process webhooks
-                        const sendPromises = webhooks.map(webhook => 
-                            fetch(webhook.url, {
+                        const sendPromises = webhookUrls.map(url => 
+                            fetch(url, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({
                                     "content": null,
-                                    "username": "TOX.GG",
+                                    "username": "Ela Tools",
                                     "embeds": [
                                         {
                                             "title": "**CA Shared**",
@@ -410,7 +415,7 @@ function createShareButton() {
                                                 }
                                             ],
                                             "footer": {
-                                                "text": "TOX.GG"
+                                                "text": "Ela Tools"
                                             },
                                             "timestamp": new Date().toISOString()
                                         }
@@ -429,7 +434,7 @@ function createShareButton() {
                         const results = await Promise.allSettled(sendPromises);
                         successCount = results.filter(r => r.status === 'fulfilled').length;
                         
-                        console.log(`Successfully sent to ${successCount} of ${webhooks.length} webhooks`);
+                        console.log(`Successfully sent to ${successCount} of ${webhookUrls.length} webhooks`);
                     } catch (error) {
                         console.error('Error sending to webhooks:', error);
                     }
@@ -891,7 +896,7 @@ function showInAppNotification(notification, styleType = '') {
             
             // Use a green TOX icon SVG directly
             iconContainer.innerHTML = `
-                <img src="https://i.ibb.co/GvKppZ1b/16px-copy.png" width="24" height="24" style="border-radius: 50%;">
+                <img src="https://i.ibb.co/ZRtjyVpF/16px.png" width="24" height="24" style="border-radius: 50%;">
             `;
             
             header.appendChild(iconContainer);
@@ -899,7 +904,7 @@ function showInAppNotification(notification, styleType = '') {
         
         const title = document.createElement('h3');
         title.className = 'notification-title';
-        title.textContent = notification.title || 'New CA Shared! | TOX';
+        title.textContent = notification.title || 'New CA Shared! | ELA';
         // Apply text color if specified
         if (notification.textColor) {
             title.style.color = notification.textColor;
@@ -959,12 +964,12 @@ function showInAppNotification(notification, styleType = '') {
         
         // Use a green TOX icon SVG directly - lock icon for entry notifications
         iconContainer.innerHTML = `
-            <img src="https://i.ibb.co/GvKppZ1b/16px-copy.png" width="24" height="24" style="border-radius: 50%;">
+            <img src="https://i.ibb.co/ZRtjyVpF/16px.png" width="24" height="24" style="border-radius: 50%;">
         `;
         
         const title = document.createElement('h3');
         title.className = 'notification-title';
-        title.textContent = notification.title || 'New CA Shared!';
+        title.textContent = notification.title || 'New CA Shared! | ELA';
         
         header.appendChild(iconContainer);
         header.appendChild(title);
@@ -1089,7 +1094,7 @@ function showInAppNotification(notification, styleType = '') {
 // Function specifically for success notifications like "CA shared successfully"
 function showSupabaseSuccessNotification(data) {
     const notification = {
-        title: '✓ CA shared successfully',
+        title: '✓ CA shared successfully | ELA',
         content: data.content || '',
         url: data.url || '',
         timestamp: Date.now(),

@@ -15,15 +15,22 @@
             --border: #8FCCAE;
             --celadon: #A4D8BE; 
             --cambridge-blue: #8FCCAE;
+            --success: #4ADE80;
+            --error: #F87171;
         }
 
         body {
-            width: 320px;
             margin: 0;
             padding: 0;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: var(--bg-primary);
             color: var(--text-primary);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
         }
 
         .header {
@@ -75,14 +82,34 @@
             color: var(--text-secondary);
         }
 
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .left-panel {
+            flex: 1;
+            min-width: 320px;
+        }
+
+        .right-panel {
+            flex: 1;
+            min-width: 320px;
+        }
+
         .section {
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
             padding: 16px;
+            margin-bottom: 20px;
         }
 
         .section-title {
-            font-size: 14px;
+            font-size: 16px;
             font-weight: 500;
-            color: var(--text-secondary);
+            color: var(--text-primary);
             margin-bottom: 12px;
         }
 
@@ -199,7 +226,7 @@
             background-color: var(--bg-secondary);
             border-radius: 8px;
             padding: 16px;
-            margin-top: 16px;
+            margin-bottom: 20px;
         }
 
         .webhook-input {
@@ -248,79 +275,123 @@
         }
 
         .delete-webhook {
-            background: none;
-            border: none;
+            background-color: rgba(239, 68, 68, 0.1);
+            border: 1px solid #EF4444;
+            color: #EF4444;
             padding: 4px 8px;
-            color: #ef4444;
-            cursor: pointer;
-            font-size: 14px;
             border-radius: 4px;
-            transition: all 0.2s;
+            cursor: pointer;
+            font-size: 12px;
         }
 
         .delete-webhook:hover {
-            background-color: rgba(239, 68, 68, 0.1);
-        }
-
-        .status {
-            display: none;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 14px;
-            margin-top: 8px;
-        }
-
-        .status.success {
-            background-color: rgba(5, 150, 105, 0.1);
-            color: #059669;
-            border: 1px solid #059669;
-        }
-
-        .status.error {
-            background-color: rgba(239, 68, 68, 0.1);
-            color: #ef4444;
-            border: 1px solid #ef4444;
-        }
-        
-        .status.pending {
-            background-color: rgba(79, 70, 229, 0.1);
-            color: #4f46e5;
-            border: 1px solid #4f46e5;
-            display: flex;
-            align-items: center;
-        }
-        
-        .status.pending::after {
-            content: "";
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            margin-left: 8px;
-            border-radius: 50%;
-            border: 2px solid currentColor;
-            border-right-color: transparent;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+            background-color: rgba(239, 68, 68, 0.2);
         }
 
         button {
-            width: 100%;
-            padding: 8px 16px;
-            background-color: var(--accent);
-            color: var(--bg-primary);
+            padding: 10px 16px;
             border: none;
             border-radius: 6px;
             font-size: 14px;
             font-weight: 500;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: all 0.2s;
+            width: 100%;
+            box-sizing: border-box;
         }
 
-        button:hover {
+        .primary-button {
+            background-color: var(--accent);
+            color: var(--bg-primary);
+        }
+
+        .primary-button:hover {
             background-color: var(--accent-hover);
+        }
+
+        .secondary-button {
+            background-color: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+
+        .secondary-button:hover {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 8px 12px;
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .status {
+            margin-top: 8px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .status.success {
+            display: block;
+            background-color: rgba(5, 150, 105, 0.1);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .status.error {
+            display: block;
+            background-color: rgba(220, 38, 38, 0.1);
+            color: var(--error);
+            border: 1px solid var(--error);
+        }
+
+        .status.warning {
+            display: block;
+            background-color: rgba(245, 158, 11, 0.1);
+            color: #F59E0B;
+            border: 1px solid #F59E0B;
+        }
+
+        .status.info {
+            display: block;
+            background-color: rgba(59, 130, 246, 0.1);
+            color: #3B82F6;
+            border: 1px solid #3B82F6;
+        }
+        
+        /* Make the page responsive */
+        @media (max-width: 768px) {
+            .content {
+                flex-direction: column;
+            }
+            
+            .left-panel, .right-panel {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -331,53 +402,74 @@
             <span class="logo-text">Ela Tools</span>
         </div>
         <div class="user">
-            <div class="avatar" id="userAvatar">U</div>
-            <span class="user-status" id="userStatus">Guest</span>
-            <button class="settings-button" id="openSettings">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" />
-                    <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 0 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H15a1.65 1.65 0 001 0 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V15z" />
-                </svg>
-            </button>
+            <div class="avatar" id="userAvatar">?</div>
+            <span class="user-status" id="userStatus">Not Set</span>
         </div>
+        <span id="groupDisplay">No Group</span>
+        <span id="authStatus"></span>
     </div>
 
-    <div class="section">
-        <div class="webhook-section">
-            <div class="section-title">Discord Webhook</div>
-            <input type="text" class="webhook-input" id="webhookName" placeholder="Enter webhook name">
-            <input type="text" class="webhook-input" id="webhookUrl" placeholder="https://discord.com/api/webhooks/...">
-            <button id="addWebhook">Add Webhook</button>
-            <div id="webhookStatus" class="status"></div>
-            <div id="webhooksList"></div>
-        </div>
+    <div class="container">
+        <div class="content">
+            <div class="left-panel">
+                <div class="section">
+                    <div class="section-title">User Profile</div>
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" placeholder="Enter your username">
+                    </div>
+                    <button class="primary-button" id="saveProfile">Save Profile</button>
+                    <div id="profileStatus" class="status"></div>
+                </div>
 
-        <!-- Add Group Sharing Section -->
-        <div class="webhook-section" style="margin-top: 16px;">
-            <div class="section-title">Group Sharing</div>
-            <div class="group-info" style="margin-bottom: 12px;">
-                <div class="webhook-name" id="groupDisplay">No Group</div>
+                <div class="section">
+                    <div class="section-title">Group Sharing</div>
+                    <div id="groupStatus" class="status"></div>
+                    <div class="form-group">
+                        <label for="groupId">Group ID</label>
+                        <input type="text" id="groupId" placeholder="Enter group ID">
+                    </div>
+                    <button class="primary-button" id="joinGroup">Join Group</button>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">Discord Webhook</div>
+                    <div id="webhookStatus" class="status"></div>
+                    <div class="form-group">
+                        <label for="webhookName">Webhook Name</label>
+                        <input type="text" id="webhookName" placeholder="Enter webhook name">
+                    </div>
+                    <div class="form-group">
+                        <label for="webhookUrl">Webhook URL</label>
+                        <input type="text" id="webhookUrl" placeholder="https://discord.com/api/webhooks/...">
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="primary-button" id="addWebhook">Add Webhook</button>
+                        <button class="secondary-button" id="testWebhook">Test</button>
+                    </div>
+                    <div id="webhooksList" class="webhooks-list" style="margin-top: 16px;"></div>
+                </div>
             </div>
-            <input type="text" class="webhook-input" id="groupIdInput" placeholder="Enter group ID">
-            <button id="joinGroup">Join Group</button>
-            <div id="groupStatus" class="status"></div>
-        </div>
-    </div>
-
-
-    <!-- Add an error log viewer section -->
-    <div id="error-log-section" style="display: none; margin-top: 20px; border-top: 1px solid #e5e7eb; padding-top: 15px;">
-        <h2 style="font-size: 16px; font-weight: 600; color: #1f2937; margin-bottom: 10px;">Error Logs</h2>
-        <div style="margin-bottom: 10px;">
-            <button id="toggle-logs-btn" class="btn btn-sm" style="background-color: #0A3B2C; color: white;">
-                Show Error Logs
-            </button>
-            <button id="clear-logs-btn" class="btn btn-sm" style="background-color: #0F4D3A; color: white; margin-left: 5px;">
-                Clear Logs
-            </button>
-        </div>
-        <div id="error-logs-container" style="display: none; max-height: 200px; overflow-y: auto; font-size: 12px; font-family: monospace; background-color: #f9fafb; padding: 10px; border-radius: 4px;">
-            <div style="color: #9ca3af; margin-bottom: 5px;">No errors logged</div>
+            
+            <div class="right-panel">
+                <div class="section">
+                    <div class="section-title">Clipboard Monitoring</div>
+                    <div class="monitor-toggle">
+                        <span>Monitor clipboard for contract addresses</span>
+                        <label class="toggle">
+                            <input type="checkbox" id="monitorToggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">Recent Activity</div>
+                    <div id="activitiesList">
+                        <div class="empty-state">No recent activity</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 

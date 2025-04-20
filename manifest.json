@@ -26,7 +26,6 @@
     }
   ],
   "action": {
-    "default_popup": "popup.html",
     "default_icon": {
       "16": "icons/16px.png",
       "48": "icons/48px.png",
@@ -39,7 +38,7 @@
     "128": "icons/128px.png"
   },
   "options_ui": {
-    "page": "options.html",
+    "page": "popup.html",
     "open_in_tab": true
   },
   "web_accessible_resources": [

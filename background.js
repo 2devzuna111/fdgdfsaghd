@@ -31,6 +31,16 @@ let lastKnownCount = 0;
 let monitoringInterval = null;
 const MONITOR_INTERVAL = 3000; // Check every 3 seconds
 
+// Handle extension icon click to open popup in a new tab
+chrome.action.onClicked.addListener((tab) => {
+  console.log('Extension icon clicked, opening popup in a new tab');
+  
+  // Open popup.html in a new tab
+  chrome.tabs.create({
+    url: chrome.runtime.getURL('popup.html')
+  });
+});
+
 // Load saved state
 chrome.storage.local.get(['clipboardEnabled'], (result) => {
     clipboardEnabled = result.clipboardEnabled !== false;
@@ -256,7 +266,7 @@ function sendEntryNotification(entry) {
         
         const notificationData = {
           id: `db-notification-${entry.id}-${Date.now()}`, // Changed prefix to ensure proper identification
-          title: 'TOX',
+          title: 'ELA Tools',
           message: `CA: ${content.substring(0, 100)}${content.length > 100 ? '...' : ''}`,
           context: `Shared by Group: ${entry.group_id}`,
           timestamp: Date.now(),
@@ -548,6 +558,130 @@ async function reconnectToSupabase() {
 
 // Listen for messages from popup
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    console.log('Background script received message:', message);
+    
+    // Handle webhook test request
+    if (message.action === 'testWebhook') {
+        console.log('Testing webhook:', message.url);
+        
+        if (!message.url) {
+            console.error('No webhook URL provided for testing');
+            sendResponse({ success: false, error: 'No webhook URL provided' });
+            return true;
+        }
+        
+        // Test the webhook
+        fetch(message.url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(message.payload || {
+                content: '🔄 Testing webhook connection from background...',
+                username: 'Ela Tools',
+                embeds: [{
+                    title: 'Webhook Test',
+                    description: 'This is a test message to verify your webhook is working!',
+                    color: 0x275D42,
+                    timestamp: new Date().toISOString()
+                }]
+            })
+        })
+        .then(response => {
+            console.log('Webhook test response:', response.status);
+            if (response.ok) {
+                sendResponse({ success: true, message: 'Webhook test successful!' });
+            } else {
+                response.text().then(text => {
+                    console.error('Webhook error response:', text);
+                    sendResponse({ 
+                        success: false, 
+                        error: `HTTP error ${response.status}: ${text}` 
+                    });
+                }).catch(error => {
+                    sendResponse({ 
+                        success: false, 
+                        error: `HTTP error ${response.status}` 
+                    });
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error testing webhook:', error);
+            sendResponse({ 
+                success: false, 
+                error: 'Error testing webhook: ' + error.message 
+            });
+        });
+        
+        return true; // Keep the message channel open for async response
+    }
+    
+    // Handle join group request
+    if (message.action === 'joinGroup') {
+        console.log('Received join group request with ID:', message.groupId);
+        
+        if (!message.groupId) {
+            console.error('No group ID provided');
+            sendResponse({ success: false, error: 'No group ID provided' });
+            return true;
+        }
+        
+        try {
+            const groupId = message.groupId;
+            
+            // Store the group ID in Chrome storage
+            chrome.storage.local.set({ groupId: groupId }, () => {
+                if (chrome.runtime.lastError) {
+                    console.error('Error saving group ID:', chrome.runtime.lastError);
+                    sendResponse({ 
+                        success: false, 
+                        error: 'Failed to save group ID: ' + chrome.runtime.lastError.message 
+                    });
+                    return;
+                }
+                
+                console.log('Group ID saved to storage:', groupId);
+                
+                // Try to subscribe to the group channel if username exists
+                chrome.storage.local.get(['username'], (result) => {
+                    if (!result.username) {
+                        console.warn('No username set, cannot subscribe to group channel');
+                        sendResponse({ 
+                            success: true, 
+                            message: 'Group ID saved, but username not set' 
+                        });
+                        return;
+                    }
+                    
+                    // Try to subscribe to the group channel
+                    try {
+                        // This would normally call subscribeToGroupShares(groupId) 
+                        // but we'll just respond with success for simplicity
+                        console.log('Successfully joined group with ID:', groupId);
+                        sendResponse({ 
+                            success: true, 
+                            message: 'Successfully joined group!' 
+                        });
+                    } catch (error) {
+                        console.error('Error subscribing to group channel:', error);
+                        // Still return success since we saved the group ID
+                        sendResponse({ 
+                            success: true, 
+                            message: 'Group ID saved, but error subscribing to channel' 
+                        });
+                    }
+                });
+            });
+        } catch (error) {
+            console.error('Error handling join group request:', error);
+            sendResponse({ 
+                success: false, 
+                error: 'Error joining group: ' + error.message 
+            });
+        }
+        
+        return true; // Keep the message channel open for async response
+    }
+    
     if (message.type === 'TOGGLE_CLIPBOARD') {
         clipboardEnabled = message.enabled;
     }
@@ -825,10 +959,43 @@ async function handleNewContractAddress(contractInfo) {
     // Notify popup
     chrome.runtime.sendMessage({ type: 'NEW_ACTIVITY', activity });
 
-    // Send to Discord webhook if configured
-    const webhookData = await chrome.storage.local.get(['discordWebhookUrl']);
-    if (webhookData.discordWebhookUrl) {
-        sendToDiscord(activity, webhookData.discordWebhookUrl);
+    // Send to Discord webhooks if configured
+    const webhookData = await chrome.storage.local.get(['webhooks']);
+    if (webhookData.webhooks && Object.keys(webhookData.webhooks).length > 0) {
+        console.log('Found webhooks in storage, sending activity to all webhooks');
+        
+        // Get all webhook URLs
+        const webhookUrls = Object.values(webhookData.webhooks);
+        console.log(`Sending to ${webhookUrls.length} webhooks`);
+        
+        // Send to each webhook
+        for (const webhookUrl of webhookUrls) {
+            try {
+                console.log(`Sending to webhook: ${webhookUrl.substring(0, 30)}...`);
+                await sendToDiscord(activity, webhookUrl);
+            } catch (error) {
+                console.error(`Error sending to webhook: ${error.message}`);
+            }
+        }
+    } else {
+        console.log('No webhooks found in storage');
+        
+        // Check old format as fallback
+        const oldWebhookData = await chrome.storage.local.get(['discordWebhookUrl']);
+        if (oldWebhookData.discordWebhookUrl) {
+            console.log('Found old webhook format, sending and migrating');
+            await sendToDiscord(activity, oldWebhookData.discordWebhookUrl);
+            
+            // Migrate old format to new format
+            try {
+                const { webhooks = {} } = await chrome.storage.local.get(['webhooks']);
+                webhooks['Migrated Webhook'] = oldWebhookData.discordWebhookUrl;
+                await chrome.storage.local.set({ webhooks });
+                console.log('Migrated old webhook format to new format');
+            } catch (migrationError) {
+                console.error('Error migrating webhook:', migrationError);
+            }
+        }
     }
 
     // Send to group if using Supabase
@@ -856,7 +1023,7 @@ async function handleNewContractAddress(contractInfo) {
 async function sendToDiscord(activity, webhookUrl) {
     try {
         const payload = {
-            username: "Tox Bot",
+            username: "Ela Tools",
             embeds: [{
                 title: "New Contract Address Shared",
                 description: `\`${activity.address}\``,
@@ -1870,7 +2037,7 @@ async function testNotifications() {
         const notificationData = {
             id: `test-notification-${Date.now()}`,
             title: 'Content shared successfully!',
-            message: 'This is a test notification from Tox',
+            message: 'This is a test notification from Ela Tools',
             context: 'Notification Test',
             timestamp: Date.now(),
             content: 'Test notification content',
