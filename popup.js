@@ -33,6 +33,11 @@ document.addEventListener('DOMContentLoaded', async function() {
                         : 'No Group';
                 }
             }
+            
+            // Update recent activities if they change
+            if (changes.recentActivities) {
+                loadRecentActivities();
+            }
         }
     });
 });
@@ -1450,118 +1455,80 @@ async function ensureWebhooksFormat() {
 
 // Load recent activities
 async function loadRecentActivities() {
-    console.log('Loading recent activities...');
-    const activitiesList = document.getElementById('activitiesList');
-    
-    if (!activitiesList) {
-        console.error('Activities list element not found');
-        return;
-    }
-    
     try {
+        const activitiesList = document.getElementById('activitiesList');
+        if (!activitiesList) return;
+        
+        console.log('Loading recent activities');
+        
         // Get recent activities from storage
         const { recentActivities = [] } = await chrome.storage.local.get(['recentActivities']);
-        console.log('Retrieved recent activities:', recentActivities);
+        console.log('Recent activities from storage:', recentActivities);
         
-        if (!recentActivities.length) {
+        // Clear current content
+        activitiesList.innerHTML = '';
+        
+        // If no activities, show empty state
+        if (!recentActivities || recentActivities.length === 0) {
             activitiesList.innerHTML = '<div class="empty-state">No recent activity</div>';
             return;
         }
         
-        // Take the last 3 activities (most recent first)
-        const lastThreeActivities = recentActivities.slice(0, 3);
-        console.log('Last three activities:', lastThreeActivities);
-        
-        // Create HTML for the activities
+        // Get the last 3 activities
+        const recentItems = recentActivities.slice(0, 3);
         let activitiesHtml = '';
         
-        lastThreeActivities.forEach(activity => {
-            const formattedTimestamp = formatTimestamp(activity.timestamp);
+        recentItems.forEach(activity => {
+            const timestamp = formatTimestamp(activity.timestamp || Date.now());
+            const contractAddress = escapeHtml(activity.contractAddress || 'Unknown Contract');
+            const chain = escapeHtml(activity.chain || 'Unknown Chain');
+            const sharedBy = escapeHtml(activity.sharedBy || 'Unknown User');
             
             activitiesHtml += `
                 <div class="activity-item">
                     <div class="activity-content">
-                        <div class="contract-address">${escapeHtml(activity.address)}</div>
+                        <div class="contract-address">${contractAddress}</div>
                         <div class="activity-details">
-                            <span class="activity-chain">Chain: ${escapeHtml(activity.chain)}</span>
+                            <span class="activity-chain">${chain}</span>
                             <span class="activity-divider">•</span>
-                            <span class="activity-user">By: ${escapeHtml(activity.sharedBy)}</span>
+                            <span class="activity-user">Shared by ${sharedBy}</span>
                         </div>
                     </div>
-                    <div class="activity-time">${formattedTimestamp}</div>
+                    <div class="activity-time">${timestamp}</div>
                 </div>
             `;
         });
         
-        // Add styles for activity items
-        const styleElement = document.createElement('style');
-        styleElement.textContent = `
-            .activity-item {
-                background-color: var(--bg-primary);
-                border-radius: 10px;
-                padding: 12px 16px;
-                margin-bottom: 12px;
-                border: 1px solid var(--border);
-            }
-            
-            .activity-content {
-                margin-bottom: 8px;
-            }
-            
-            .contract-address {
-                font-family: monospace;
-                background-color: rgba(255, 255, 255, 0.1);
-                padding: 8px 12px;
-                border-radius: 6px;
-                margin-bottom: 8px;
-                font-size: 14px;
-                color: var(--text-primary);
-                word-break: break-all;
-            }
-            
-            .activity-details {
-                display: flex;
-                align-items: center;
-                flex-wrap: wrap;
-                gap: 8px;
-                font-size: 13px;
-                color: var(--text-secondary);
-            }
-            
-            .activity-divider {
-                font-size: 10px;
-                color: var(--border);
-            }
-            
-            .activity-chain, .activity-user {
-                display: inline-flex;
-                align-items: center;
-                background-color: rgba(255, 255, 255, 0.06);
-                padding: 3px 8px;
-                border-radius: 4px;
-            }
-            
-            .activity-time {
-                font-size: 12px;
-                color: var(--text-secondary);
-                text-align: right;
-            }
-        `;
-        
-        // Append the style and activities HTML
-        document.head.appendChild(styleElement);
         activitiesList.innerHTML = activitiesHtml;
         
-        // Listen for storage changes to update the activities list in real-time
-        chrome.storage.onChanged.addListener((changes, namespace) => {
-            if (namespace === 'local' && changes.recentActivities) {
-                console.log('Recent activities changed, updating UI');
-                loadRecentActivities();
-            }
+        // Add click event to copy contract addresses
+        document.querySelectorAll('.contract-address').forEach(element => {
+            element.addEventListener('click', function() {
+                const text = this.textContent;
+                navigator.clipboard.writeText(text).then(() => {
+                    const originalText = this.textContent;
+                    this.textContent = 'Copied!';
+                    this.style.backgroundColor = 'rgba(74, 222, 128, 0.2)';
+                    
+                    setTimeout(() => {
+                        this.textContent = originalText;
+                        this.style.backgroundColor = '';
+                    }, 1500);
+                }).catch(err => {
+                    console.error('Failed to copy text: ', err);
+                });
+            });
+            
+            // Add cursor pointer style
+            element.style.cursor = 'pointer';
+            element.title = 'Click to copy';
         });
         
     } catch (error) {
         console.error('Error loading recent activities:', error);
-        activitiesList.innerHTML = '<div class="empty-state">Error loading activities</div>';
+        const activitiesList = document.getElementById('activitiesList');
+        if (activitiesList) {
+            activitiesList.innerHTML = '<div class="empty-state">Error loading activities</div>';
+        }
     }
 } 
