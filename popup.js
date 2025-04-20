@@ -82,6 +82,10 @@ async function initializePopup() {
         await loadHistory();
         console.log('History loaded');
         
+        // Load recent activities
+        await loadRecentActivities();
+        console.log('Recent activities loaded');
+        
         // Load notifications
         await loadNotifications();
         console.log('Notifications loaded');
@@ -1441,5 +1445,123 @@ async function ensureWebhooksFormat() {
         console.error('Error ensuring webhooks format:', error);
         // Initialize with empty object on error
         await chrome.storage.local.set({ webhooks: {} });
+    }
+}
+
+// Load recent activities
+async function loadRecentActivities() {
+    console.log('Loading recent activities...');
+    const activitiesList = document.getElementById('activitiesList');
+    
+    if (!activitiesList) {
+        console.error('Activities list element not found');
+        return;
+    }
+    
+    try {
+        // Get recent activities from storage
+        const { recentActivities = [] } = await chrome.storage.local.get(['recentActivities']);
+        console.log('Retrieved recent activities:', recentActivities);
+        
+        if (!recentActivities.length) {
+            activitiesList.innerHTML = '<div class="empty-state">No recent activity</div>';
+            return;
+        }
+        
+        // Take the last 3 activities (most recent first)
+        const lastThreeActivities = recentActivities.slice(0, 3);
+        console.log('Last three activities:', lastThreeActivities);
+        
+        // Create HTML for the activities
+        let activitiesHtml = '';
+        
+        lastThreeActivities.forEach(activity => {
+            const formattedTimestamp = formatTimestamp(activity.timestamp);
+            
+            activitiesHtml += `
+                <div class="activity-item">
+                    <div class="activity-content">
+                        <div class="contract-address">${escapeHtml(activity.address)}</div>
+                        <div class="activity-details">
+                            <span class="activity-chain">Chain: ${escapeHtml(activity.chain)}</span>
+                            <span class="activity-divider">•</span>
+                            <span class="activity-user">By: ${escapeHtml(activity.sharedBy)}</span>
+                        </div>
+                    </div>
+                    <div class="activity-time">${formattedTimestamp}</div>
+                </div>
+            `;
+        });
+        
+        // Add styles for activity items
+        const styleElement = document.createElement('style');
+        styleElement.textContent = `
+            .activity-item {
+                background-color: var(--bg-primary);
+                border-radius: 10px;
+                padding: 12px 16px;
+                margin-bottom: 12px;
+                border: 1px solid var(--border);
+            }
+            
+            .activity-content {
+                margin-bottom: 8px;
+            }
+            
+            .contract-address {
+                font-family: monospace;
+                background-color: rgba(255, 255, 255, 0.1);
+                padding: 8px 12px;
+                border-radius: 6px;
+                margin-bottom: 8px;
+                font-size: 14px;
+                color: var(--text-primary);
+                word-break: break-all;
+            }
+            
+            .activity-details {
+                display: flex;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 8px;
+                font-size: 13px;
+                color: var(--text-secondary);
+            }
+            
+            .activity-divider {
+                font-size: 10px;
+                color: var(--border);
+            }
+            
+            .activity-chain, .activity-user {
+                display: inline-flex;
+                align-items: center;
+                background-color: rgba(255, 255, 255, 0.06);
+                padding: 3px 8px;
+                border-radius: 4px;
+            }
+            
+            .activity-time {
+                font-size: 12px;
+                color: var(--text-secondary);
+                text-align: right;
+            }
+        `;
+        
+        // Append the style and activities HTML
+        document.head.appendChild(styleElement);
+        activitiesList.innerHTML = activitiesHtml;
+        
+        // Listen for storage changes to update the activities list in real-time
+        chrome.storage.onChanged.addListener((changes, namespace) => {
+            if (namespace === 'local' && changes.recentActivities) {
+                console.log('Recent activities changed, updating UI');
+                loadRecentActivities();
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error loading recent activities:', error);
+        activitiesList.innerHTML = '<div class="empty-state">Error loading activities</div>';
     }
 } 

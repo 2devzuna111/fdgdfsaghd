@@ -655,8 +655,8 @@ function createNotificationContainer() {
         
         .ela-notification {
             background-color: #ffffff;
-            border-radius: 12px;
-            padding: 14px 16px;
+            border-radius: 16px;
+            padding: 16px;
             pointer-events: auto;
             animation: slideIn 0.3s ease-out forwards;
             max-width: 100%;
@@ -664,73 +664,73 @@ function createNotificationContainer() {
             position: relative;
             margin-bottom: 0;
             color: #000000;
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.03);
-            border: 1px solid rgba(229, 231, 235, 0.5);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+            border: none;
             backdrop-filter: blur(8px);
         }
         
         .ela-notification.success {
-            border-left: none;
             display: flex;
             flex-direction: column;
-            background: linear-gradient(to right bottom, #ffffff, #f9fafb);
+            background: linear-gradient(135deg, #275D42 0%, #3E8964 100%);
+            color: #FFFFFF;
         }
         
         .ela-notification.db-notification {
-            border-left: none;
             display: flex;
             flex-direction: column;
-            background: #446E63;
-            border-radius: 12px;
-            box-shadow: none;
-            padding: 8px 14px;
-            border: 1px solid #FDFBF3;
+            background: linear-gradient(135deg, #275D42 0%, #1A4A33 100%);
+            border-radius: 16px;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.16);
+            padding: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
-        .ela-notification.success .notification-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 18px;
-        }
-        
+        .ela-notification.success .notification-header,
         .ela-notification.db-notification .notification-header {
             display: flex;
             align-items: center;
-            margin-bottom: 6px;
+            margin-bottom: 12px;
         }
         
         .ela-notification.success .success-icon,
         .ela-notification.db-notification .success-icon {
-            width: 28px;
-            height: 28px;
-            margin-right: 14px;
+            width: 32px;
+            height: 32px;
+            margin-right: 12px;
             flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 50%;
+            padding: 6px;
         }
         
         .ela-notification.success .success-icon img,
         .ela-notification.db-notification .success-icon img {
-            width: 28px;
-            height: 28px;
+            width: 20px;
+            height: 20px;
         }
         
         .ela-notification.success .notification-title,
         .ela-notification.db-notification .notification-title {
-            font-weight: 700;
-            font-size: 19px;
-            color: #FDFBF3;
+            font-weight: 600;
+            font-size: 18px;
+            color: #FFFFFF;
             margin: 0;
         }
         
         .ela-notification.success .notification-content {
             margin-top: 10px;
-            color: #000000;
+            color: rgba(255, 255, 255, 0.9);
             font-size: 14px;
             line-height: 1.6;
         }
         
         .ela-notification.db-notification .notification-content {
-            margin-top: 10px;
-            color: #FDFBF3;
+            margin-top: 8px;
+            color: rgba(255, 255, 255, 0.9);
             font-size: 14px;
             line-height: 1.6;
         }
@@ -740,7 +740,7 @@ function createNotificationContainer() {
             display: flex;
             margin-top: 6px;
             font-size: 14px;
-            color: #FDFBF3;
+            color: rgba(255, 255, 255, 0.85);
             line-height: 1.6;
             word-break: break-word;
         }
@@ -748,62 +748,87 @@ function createNotificationContainer() {
         .ela-notification.success .notification-detail-label,
         .ela-notification.db-notification .notification-detail-label {
             font-weight: 500;
-            color: #FDFBF3;
+            color: rgba(255, 255, 255, 0.7);
+            margin-right: 6px;
         }
         
         .ela-notification.success .notification-detail-value,
         .ela-notification.db-notification .notification-detail-value {
-            color: #FDFBF3;
+            color: #FFFFFF;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 13px;
+            max-width: 100%;
+            overflow-x: auto;
         }
         
         .ela-notification .notification-label {
-            font-size: 16px;
-            font-weight: bold;
+            font-size: 15px;
+            font-weight: 500;
             margin-bottom: 2px;
             margin-top: 0;
-            color: #FDFBF3;
+            color: rgba(255, 255, 255, 0.7);
         }
         
         .ela-notification .notification-value {
-            font-size: 15px;
+            font-size: 14px;
             word-break: break-all;
-            margin-bottom: 6px;
+            margin-bottom: 10px;
             line-height: 1.4;
-            color: #FDFBF3;
+            color: #FFFFFF;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-family: monospace;
         }
         
         .ela-notification .notification-group {
-            font-size: 16px;
-            font-weight: bold;
-            margin-top: 2px;
-            color: #FDFBF3;
+            font-size: 14px;
+            font-weight: 500;
+            margin-top: 8px;
+            color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+        }
+        
+        .ela-notification .notification-group:before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #4ADE80;
+            border-radius: 50%;
+            margin-right: 6px;
         }
         
         .ela-notification .close-button {
             position: absolute;
             top: 12px;
             right: 12px;
-            background: none;
+            background: rgba(255, 255, 255, 0.1);
             border: none;
             padding: 4px;
             cursor: pointer;
-            color: #9ca3af;
+            color: rgba(255, 255, 255, 0.7);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             width: 24px;
             height: 24px;
+            transition: all 0.2s;
         }
         
         .ela-notification .close-button:hover {
-            background-color: #f3f4f6;
-            color: #4b5563;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: #FFFFFF;
         }
         
         .ela-notification .action-button {
-            padding: 5px 16px;
-            background-color: #0E5042;
+            padding: 8px 16px;
+            background-color: rgba(255, 255, 255, 0.15);
             color: white;
             border: none;
             border-radius: 8px;
@@ -811,15 +836,13 @@ function createNotificationContainer() {
             font-weight: 500;
             cursor: pointer;
             align-self: flex-end;
-            margin-top: 5px;
+            margin-top: 12px;
             transition: all 0.2s;
-            box-shadow: 0 2px 5px rgba(10, 59, 44, 0.2);
         }
         
         .ela-notification .action-button:hover {
-            background-color: #074033;
+            background-color: rgba(255, 255, 255, 0.25);
             transform: translateY(-1px);
-            box-shadow: 0 3px 7px rgba(10, 59, 44, 0.3);
         }
         
         .ela-notification.clickable {
@@ -828,7 +851,7 @@ function createNotificationContainer() {
         
         .ela-notification.clickable:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18), 0 4px 10px rgba(0, 0, 0, 0.1);
             transition: all 0.2s ease;
         }
         
@@ -839,13 +862,15 @@ function createNotificationContainer() {
             transform: translateX(-50%);
             background-color: #4ADE80;
             color: white;
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-size: 12px;
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
             opacity: 0;
             transition: opacity 0.3s;
             z-index: 10001;
             pointer-events: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
         
         @keyframes slideIn {
@@ -894,9 +919,11 @@ function showInAppNotification(notification, styleType = '') {
             const iconContainer = document.createElement('div');
             iconContainer.className = 'success-icon';
             
-            // Use a green TOX icon SVG directly
+            // Custom SVG icon for Ela
             iconContainer.innerHTML = `
-                <img src="https://i.ibb.co/ZRtjyVpF/16px.png" width="24" height="24" style="border-radius: 50%;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 12H20M4 12L8 8M4 12L8 16" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
             `;
             
             header.appendChild(iconContainer);
@@ -955,16 +982,18 @@ function showInAppNotification(notification, styleType = '') {
             notificationEl.appendChild(actionButton);
         }
     } else if (styleType === 'db-notification') {
-        // Standard notification with TOX icon
+        // Standard notification with modern icon
         const header = document.createElement('div');
         header.className = 'notification-header';
         
         const iconContainer = document.createElement('div');
         iconContainer.className = 'success-icon';
         
-        // Use a green TOX icon SVG directly - lock icon for entry notifications
+        // Use a checkmark SVG icon for success
         iconContainer.innerHTML = `
-            <img src="https://i.ibb.co/ZRtjyVpF/16px.png" width="24" height="24" style="border-radius: 50%;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M5 13L9 17L19 7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
         `;
         
         const title = document.createElement('h3');
@@ -993,11 +1022,23 @@ function showInAppNotification(notification, styleType = '') {
             caValue.className = 'notification-detail notification-value';
             caValue.textContent = caContent;
             contentContainer.appendChild(caValue);
+        } else if (notification.content) {
+            // For contract address content
+            const caLabel = document.createElement('div');
+            caLabel.className = 'notification-detail notification-label';
+            caLabel.textContent = 'Contract Address:';
+            caLabel.style.marginBottom = '2px';
+            contentContainer.appendChild(caLabel);
+            
+            const caValue = document.createElement('div');
+            caValue.className = 'notification-detail notification-value';
+            caValue.textContent = notification.content;
+            contentContainer.appendChild(caValue);
         } else {
             // For other message types
             const messageText = document.createElement('div');
             messageText.className = 'notification-detail';
-            messageText.textContent = notification.message || notification.content || '';
+            messageText.textContent = notification.message || '';
             contentContainer.appendChild(messageText);
         }
         
@@ -1094,13 +1135,13 @@ function showInAppNotification(notification, styleType = '') {
 // Function specifically for success notifications like "CA shared successfully"
 function showSupabaseSuccessNotification(data) {
     const notification = {
-        title: '✓ CA shared successfully | ELA',
+        title: '✓ Contract Address Shared',
         content: data.content || '',
         url: data.url || '',
         timestamp: Date.now(),
         noIcon: false,  // Show the icon
         autoHide: true,  // Auto hide without OK button
-        hideTime: 2000   // Hide after 2 seconds
+        hideTime: 2500   // Hide after 2.5 seconds
     };
     
     return showInAppNotification(notification, 'db-notification');
