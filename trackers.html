@@ -189,6 +189,7 @@
             transition: var(--transition);
             overflow: hidden;
             height: 100%;
+            position: relative;
         }
         
         .section:hover {
@@ -457,6 +458,37 @@
             font-size: 14px;
         }
         
+        /* Coming Soon badge */
+        .coming-soon {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(15, 45, 32, 0.7);
+            backdrop-filter: blur(2px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+            border-radius: var(--radius-md);
+            pointer-events: none;
+        }
+        
+        .coming-soon-badge {
+            background: linear-gradient(135deg, var(--accent) 0%, #3BB76F 100%);
+            color: var(--bg-primary);
+            font-weight: 600;
+            font-size: 18px;
+            padding: 12px 24px;
+            border-radius: 50px;
+            box-shadow: var(--shadow);
+            letter-spacing: 0.5px;
+            transform: rotate(-5deg);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            text-transform: uppercase;
+        }
+        
         @media (max-width: 768px) {
             body {
                 min-width: auto;
@@ -599,6 +631,9 @@
                             </tbody>
                         </table>
                     </div>
+                    <div class="coming-soon">
+                        <div class="coming-soon-badge">Feature Coming Soon</div>
+                    </div>
                 </div>
             </div>
 
@@ -683,6 +718,9 @@
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+                    <div class="coming-soon">
+                        <div class="coming-soon-badge">Feature Coming Soon</div>
                     </div>
                 </div>
             </div>
